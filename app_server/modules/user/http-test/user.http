@@ -1,0 +1,51 @@
+# @name login
+POST {{host}}/api/v1/user/login
+Content-Type: application/json
+
+{
+  "email": "miiro@qq.com",
+  "password": "233233"
+}
+
+### @name 32
+# @name register
+POST {{host}}/api/v1/user/register
+Content-Type: application/json
+
+{
+  "email": "miiro@qq",
+  "password": "233233"
+}
+
+###
+# @name get user info
+GET {{host}}/api/v1/user/profile?name=hanami
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzczNTE5MTIsIlVpZCI6MX0.HUs1c8OLxdcy2Zeis3HHwDAMLMVQiK1Xwn2xRV86odo
+
+###
+# @name add video
+POST {{host}}/api/v1/video
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzcyNjk0NzYsIlVpZCI6MX0.W1xmF_PaqiFVJGe3-8NK6aMlYoYLwT-bBKdFxk0aVO4
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="title"
+
+hanami
+--WebAppBoundary
+Content-Disposition: form-data; name="age"
+
+29
+--WebAppBoundary
+Content-Disposition: form-data; name="file"
+Content-Type: image/jpeg
+
+#C:\Users\HANAMI\Desktop\QQ图片20221121101438.jpg
+
+--WebAppBoundary--
+
+###
+
+# @name get video by id
+GET {{host}}/api/v1/video/1?name=hanami
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzcyNjk0NzYsIlVpZCI6MX0.W1xmF_PaqiFVJGe3-8NK6aMlYoYLwT-bBKdFxk0aVO4
