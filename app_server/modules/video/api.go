@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"simple-video-server/core"
-	"simple-video-server/pkg/app_ctx"
 	"simple-video-server/pkg/business_code"
 	"simple-video-server/pkg/log"
 )
@@ -15,21 +14,21 @@ type controller struct {
 var Controller = &controller{}
 
 func (ctl *controller) Add(c *core.Context) (*string, error) {
-	uid, _ := app_ctx.GetUid(c.Context)
-	fmt.Println("uid ", uid)
+	//uid, _ := app_ctx.GetUid(c.Context)
+	//fmt.Println("uid ", uid)
 
 	var form VideoAdd
 
 	err := c.ShouldBind(&form)
 	if err != nil {
-		panic(business_code.RequestErr)
+		panic(err)
 	}
 
 	file, header, err := c.Request.FormFile("file")
 
 	// TODO: 校验文件大小、格式、是否存在
 	if err != nil {
-		panic(err)
+		panic(business_code.EmptyUploadFile)
 	}
 
 	fmt.Printf("filename: %s, size: %d \n", header.Filename, header.Size)
@@ -38,7 +37,7 @@ func (ctl *controller) Add(c *core.Context) (*string, error) {
 		panic(err)
 	}
 
-	url, err := Service.Add(*uid, form, file, header.Filename)
+	url, err := Service.Add(*c.UID, form, file, header.Filename)
 
 	if err != nil {
 		panic(err)

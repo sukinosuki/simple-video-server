@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
@@ -9,7 +8,6 @@ import (
 	"net/http"
 	"simple-video-server/common"
 	"simple-video-server/pkg/business_code"
-	"simple-video-server/pkg/err_code"
 	"simple-video-server/pkg/log"
 	"simple-video-server/pkg/validation"
 	"strings"
@@ -23,12 +21,13 @@ var ErrorHandler = func(c *gin.Context) {
 		err := recover()
 
 		if err != nil {
-			log.Error("捕获错误 ", zap.Any("err", err))
 
 			//log.Error("全局错误 err: ", err)
 
 			//if errors.Is(e, &mysql.MySQLError{}) {
 			if e, ok := err.(*mysql.MySQLError); ok {
+				log.Warn("mysql错误", zap.String("msg", e.Message))
+
 				if strings.Contains(e.Error(), "Duplicate") {
 					c.AbortWithStatusJSON(http.StatusInternalServerError, common.AppResponse[any]{
 						Code:   500,
@@ -56,30 +55,32 @@ var ErrorHandler = func(c *gin.Context) {
 					msg = v
 					break
 				}
-				fmt.Println("msg ", msg)
+				log.Warn("参数校验错误", zap.String("msg", msg))
 
 				c.AbortWithStatusJSON(http.StatusBadRequest, &common.AppResponse[any]{
 					Code:   business_code.RequestErr.Code(),
 					Msg:    msg,
-					ErrMsg: business_code.ServerErr.Message(),
+					ErrMsg: msg,
 				})
 
 				return
 			}
 
-			// 自定义错误
-			if errCode, ok := err.(err_code.ErrCode); ok {
-				c.AbortWithStatusJSON(http.StatusOK, &common.AppResponse[any]{
-					Code:   errCode.Code,
-					Msg:    errCode.Msg,
-					ErrMsg: errCode.ErrMsg,
-				})
-
-				return
-			}
+			//// 自定义错误
+			//if errCode, ok := err.(err_code.ErrCode); ok {
+			//	c.AbortWithStatusJSON(http.StatusOK, &common.AppResponse[any]{
+			//		Code:   errCode.Code,
+			//		Msg:    errCode.Msg,
+			//		ErrMsg: errCode.ErrMsg,
+			//	})
+			//
+			//	return
+			//}
 
 			// 自定义business错误
 			if e, ok := err.(business_code.BusinessCode); ok {
+				log.Warn("业务错误", zap.String("msg", e.Message()), zap.Int("code", e.Code()))
+
 				// TODO:
 				c.AbortWithStatusJSON(http.StatusOK, common.AppResponse[any]{
 					Code:   e.Code(),
@@ -91,7 +92,8 @@ var ErrorHandler = func(c *gin.Context) {
 			}
 
 			e := err.(error)
-			fmt.Println("捕获错误 ", e.Error())
+
+			log.Warn("未知错误 ", zap.String("err msg", e.Error()))
 
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code": 500,

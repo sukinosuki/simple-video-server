@@ -12,7 +12,7 @@ var PreAuthorizeHandler = func(c *gin.Context) {
 	token := app_ctx.GetHeaderAuthorize(c)
 	traceId, _ := app_ctx.GetTraceId(c)
 
-	fields := []zap.Field{}
+	var fields []zap.Field
 
 	fields = append(fields, zap.String("trace-id", traceId))
 	if token != "" {

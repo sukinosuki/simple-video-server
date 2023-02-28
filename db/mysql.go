@@ -36,6 +36,7 @@ func SetupMysql() *gorm.DB {
 	db.AutoMigrate(
 		&models.User{},
 		&models.Video{},
+		&models.VideoCollection{},
 	)
 
 	if err != nil {

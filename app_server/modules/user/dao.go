@@ -43,3 +43,24 @@ func (d *userDao) FindById(uid uint) (*models.User, error) {
 
 	return &user, err
 }
+
+// AddCollection 新增收藏
+func (d *userDao) AddCollection(collection *models.VideoCollection) error {
+	return global.MysqlDB.Model(&models.VideoCollection{}).Create(collection).Error
+}
+
+// DeleteCollection 删除收藏
+func (d *userDao) DeleteCollection(uid uint, vid uint) error {
+	// delete操作记得加上where条件
+	err := global.MysqlDB.Model(&models.VideoCollection{}).Where("uid = ? AND vid = ?", uid, vid).Limit(1).Delete(&models.VideoCollection{}).Error
+
+	return err
+}
+
+// GetAllCollection TODO:分页
+func (d *userDao) GetAllCollection(uid uint) ([]models.VideoCollection, error) {
+	var collection []models.VideoCollection
+	err := global.MysqlDB.Model(&models.VideoCollection{}).Find(&collection).Error
+
+	return collection, err
+}

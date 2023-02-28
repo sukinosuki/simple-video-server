@@ -1,6 +1,9 @@
 package user
 
-import "simple-video-server/models"
+import (
+	"simple-video-server/models"
+	"time"
+)
 
 // User User结构体默认的表名为`users`, 如果需要自定义表名, 可以让User实现TableName方法
 //type User struct {
@@ -26,13 +29,24 @@ type UserRegister struct {
 }
 
 type UserLogin struct {
-	Email    string `json:"email" form:"email" binding:"required"`
-	Password string `json:"password" form:"password" binding:"required"`
+	Email    string `json:"email" form:"email" binding:"required,email" label:"邮箱"`
+	Password string `json:"password" form:"password" binding:"required,min=6,max=12" label:"密码"`
 }
 
 type LoginRes struct {
 	User  *models.User `json:"user"`
 	Token string       `json:"token"`
+}
+
+type AddCollection struct {
+	VID uint `json:"vid" form:"vid" binding:"required"`
+}
+
+type UserVideoCollection struct {
+	VID            uint      `json:"vid"`
+	CollectionTime time.Time `json:"collection_time"`
+	Title          string    `json:"title"`
+	Cover          string    `json:"cover"`
 }
 
 //func init() {

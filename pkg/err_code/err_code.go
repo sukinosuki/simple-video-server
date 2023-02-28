@@ -1,18 +1,18 @@
 package err_code
 
-type ErrCode struct {
-	Code   int
-	Msg    string
-	ErrMsg string
-}
-
-func (e ErrCode) Error() string {
-	return e.ErrMsg
-}
-
-func (e ErrCode) Message() string {
-	return e.Msg
-}
+//type ErrCode struct {
+//	Code   int
+//	Msg    string
+//	ErrMsg string
+//}
+//
+//func (e ErrCode) Error() string {
+//	return e.ErrMsg
+//}
+//
+//func (e ErrCode) Message() string {
+//	return e.Msg
+//}
 
 //func RequestErr(msg string, errMsg string) ErrCode {
 //	return ErrCode{

@@ -17,6 +17,14 @@ func (d *videoDao) Add(video *models.Video) error {
 	return err
 }
 
+func (d *videoDao) GetById(id uint) (*models.Video, error) {
+
+	var video models.Video
+	err := global.MysqlDB.Model(&models.Video{}).Where("id = ?", id).First(&video).Error
+
+	return &video, err
+}
+
 //func (d *videoDao) Update(video) {
 //
 //}
