@@ -22,8 +22,8 @@ Content-Type: application/json
 ###
 # @name get user info
 GET {{host}}/api/v1/user/profile?name=hanami
-#Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzczNTE5MTIsIlVpZCI6MX0.HUs1c8OLxdcy2Zeis3HHwDAMLMVQiK1Xwn2xRV86odo
-Authorization: {{auth_token}}
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2Nzc2Mjc1MDgsIlVJRCI6MX0.HIosjWiLlwGKcrT9Mq97QqlNQVVRM7-SW59NsQfmZ54
+#Authorization: {{auth_token}}
 
 ###
 # @name add video

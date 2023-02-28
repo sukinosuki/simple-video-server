@@ -9,10 +9,6 @@ import (
 )
 
 var PreAuthorizeHandler = func(c *gin.Context) {
-	//log.Info(c, "[PreAuthorizeHandler] start ")
-	//log := log.GetCtx(c.Request.Context())
-	//log.Info("[PreAuthorizeHandler] start ")
-
 	token := app_ctx.GetHeaderAuthorize(c)
 	traceId, _ := app_ctx.GetTraceId(c)
 
@@ -35,7 +31,7 @@ var PreAuthorizeHandler = func(c *gin.Context) {
 	ctx, logger := log.AddCtx(c.Request.Context(), fields...)
 	c.Request = c.Request.WithContext(ctx)
 
-	logger.Info("add trace id success ", zap.String("trace id ", traceId))
+	logger.Info("[PreAuthorizeHandler]")
 
 	c.Next()
 }

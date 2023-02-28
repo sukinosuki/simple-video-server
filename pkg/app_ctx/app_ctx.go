@@ -29,13 +29,13 @@ func GetTraceId(c *gin.Context) (string, bool) {
 	return "", false
 }
 
-func GetUid(c *gin.Context) (uint, bool) {
+func GetUid(c *gin.Context) (*uint, bool) {
 	value, ok := get[uint](c, UidKey)
 	if ok {
-		return *value, ok
+		return value, ok
 	}
 
-	return 0, ok
+	return nil, ok
 }
 
 func SetUid(c *gin.Context, uid uint) {

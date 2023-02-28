@@ -2,8 +2,8 @@ package video
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"simple-video-server/core"
 	"simple-video-server/pkg/app_ctx"
 	"simple-video-server/pkg/business_code"
 	"simple-video-server/pkg/log"
@@ -14,8 +14,8 @@ type controller struct {
 
 var Controller = &controller{}
 
-func (ctl *controller) AddHandler(c *gin.Context) (*string, error) {
-	uid, _ := app_ctx.GetUid(c)
+func (ctl *controller) Add(c *core.Context) (*string, error) {
+	uid, _ := app_ctx.GetUid(c.Context)
 	fmt.Println("uid ", uid)
 
 	var form VideoAdd
@@ -38,7 +38,7 @@ func (ctl *controller) AddHandler(c *gin.Context) (*string, error) {
 		panic(err)
 	}
 
-	url, err := Service.Add(uid, form, file, header.Filename)
+	url, err := Service.Add(*uid, form, file, header.Filename)
 
 	if err != nil {
 		panic(err)
@@ -47,7 +47,7 @@ func (ctl *controller) AddHandler(c *gin.Context) (*string, error) {
 	return &url, nil
 }
 
-func (ctl *controller) GetById(c *gin.Context) (string, error) {
+func (ctl *controller) GetById(c *core.Context) (string, error) {
 	log := log.GetCtx(c.Request.Context())
 	id := c.Param("id")
 

@@ -40,6 +40,17 @@ func init() {
 		logMode = zapcore.InfoLevel
 	}
 
+	// TODO:
+	if config.Env.Debug {
+		logger, err := zap.NewDevelopment()
+		if err != nil {
+			panic(err)
+		}
+
+		Logger = logger
+		return
+	}
+
 	//core := zapcore.NewCore(getEncoder(), getWriteSyncer(), logMode)
 	//core := zapcore.NewCore(getEncoder(), zapcore.NewMultiWriteSyncer(getWriteSyncer(), zapcore.AddSync(os.Stdout)), logMode)
 	core := zapcore.NewCore(getEncoder(), zapcore.NewMultiWriteSyncer(getWriteSyncer(), zapcore.AddSync(os.Stdout)), logMode)

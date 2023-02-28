@@ -11,7 +11,6 @@ import (
 //const AuthErrKey = "auth_err"
 
 var AuthorizeHandler = func(c *gin.Context) {
-	//_, exists := c.Get(UidKey)
 	_, exists := app_ctx.GetUid(c)
 
 	if !exists {
@@ -26,9 +25,6 @@ var AuthorizeHandler = func(c *gin.Context) {
 			}
 
 			panic(authErr)
-			//if exists {
-			//	panic(err_code.UnAuthorizedErr(err.Message(), err.Error()))
-			//}
 		}
 
 		// TODO:

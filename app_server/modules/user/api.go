@@ -2,14 +2,12 @@ package user
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"simple-video-server/common"
+	"simple-video-server/core"
 	"simple-video-server/models"
 	"simple-video-server/pkg/app_ctx"
 	"simple-video-server/pkg/app_jwt"
 	"simple-video-server/pkg/log"
-	"time"
 )
 
 type _api struct {
@@ -30,20 +28,20 @@ var Api = &_api{
 // @Param data body UserRegister true "登录参数"
 // @Router /_api/v1/user/register [post]
 // @Success 200 {object} LoginRes "成功响应"
-func (api *_api) RegisterHandler(c *gin.Context) (*LoginRes, error) {
+func (api *_api) RegisterHandler(c *core.Context) (*LoginRes, error) {
 	//api.Build(c, "register")
 	log := log.GetCtx(c.Request.Context())
 
 	log.Info("用户注册开始")
 
-	traceId, _ := app_ctx.GetTraceId(c)
-	log.Info("register1  ", zap.String("trace id ", traceId))
+	//traceId, _ := app_ctx.GetTraceId(c.Context)
+	//log.Info("register1  ", zap.String("trace id ", traceId))
 
-	c.Set("name", 233)
-	time.Sleep(3 * time.Second)
+	//c.Set("name", 233)
+	//time.Sleep(3 * time.Second)
 
-	traceId, _ = app_ctx.GetTraceId(c)
-	log.Info("register2 ", zap.String("trace id ", traceId))
+	//traceId, _ = app_ctx.GetTraceId(c.Context)
+	//log.Info("register2 ", zap.String("trace id ", traceId))
 
 	var userRegister UserRegister
 
@@ -73,18 +71,20 @@ func (api *_api) RegisterHandler(c *gin.Context) (*LoginRes, error) {
 // @Param data body UserLogin true "登录参数"
 // @Router /_api/v1/user/login [post]
 // @Success 200 {object} LoginRes
-func (api *_api) Login(c *gin.Context) (*LoginRes, error) {
+func (api *_api) Login(c *core.Context) (*LoginRes, error) {
 
 	log := log.GetCtx(c.Request.Context())
+	log.Info("登录开始")
+	c.Log.Info("登录开始")
 
-	traceId, _ := app_ctx.GetTraceId(c)
-	fmt.Println("login traceid1 ", traceId)
-	log.Info("login 1 ", zap.String("trace id ", traceId))
+	//traceId, _ := app_ctx.GetTraceId(c.Context)
+	//fmt.Println("login traceid1 ", traceId)
+	//log.Info("login 1 ", zap.String("trace id ", traceId))
 	// TODO: 不同请求下的ctx.set是否会冲突
 	//time.Sleep(5 * time.Second)
 
-	traceId, _ = app_ctx.GetTraceId(c)
-	log.Info("login 2", zap.String("trace id ", traceId))
+	//traceId, _ = app_ctx.GetTraceId(c.Context)
+	//log.Info("login 2", zap.String("trace id ", traceId))
 
 	name, exists := c.Get("name")
 	fmt.Println("name ", name)
@@ -114,14 +114,17 @@ func (api *_api) Login(c *gin.Context) (*LoginRes, error) {
 	return loginRes, err
 }
 
-func (api *_api) Profile(c *gin.Context) (*models.User, error) {
-	log := log.GetCtx(c.Request.Context())
+func (api *_api) Profile(c *core.Context) (*models.User, error) {
+	//log := log.GetCtx(c.Request.Context())
 
-	uid, _ := app_ctx.GetUid(c)
+	uid, _ := app_ctx.GetUid(c.Context)
 
-	log.Info("获取用户信息 ", zap.Uint("uid", uid))
+	c.Log.Info("获取用户信息")
+	//log.Info("获取用户信息，uid from c.uid", zap.Uint("uid ", *c.UID))
 
-	user := Service.GetProfile(uid)
+	//log.Info("获取用户信息 ", zap.Uint("uid", *uid))
+
+	user := Service.GetProfile(*uid)
 
 	return user, nil
 }
