@@ -1,7 +1,5 @@
 package err_code
 
-import "net/http"
-
 type ErrCode struct {
 	Code   int
 	Msg    string
@@ -16,18 +14,18 @@ func (e ErrCode) Message() string {
 	return e.Msg
 }
 
-func RequestErr(msg string, errMsg string) ErrCode {
-	return ErrCode{
-		Code:   400,
-		Msg:    msg,
-		ErrMsg: errMsg,
-	}
-}
-
-func UnAuthorizedErr(msg string, errMsg string) ErrCode {
-	return ErrCode{
-		Code:   http.StatusUnauthorized,
-		Msg:    msg,
-		ErrMsg: errMsg,
-	}
-}
+//func RequestErr(msg string, errMsg string) ErrCode {
+//	return ErrCode{
+//		Code:   400,
+//		Msg:    msg,
+//		ErrMsg: errMsg,
+//	}
+//}
+//
+//func UnAuthorizedErr(msg string, errMsg string) ErrCode {
+//	return ErrCode{
+//		Code:   http.StatusUnauthorized,
+//		Msg:    msg,
+//		ErrMsg: errMsg,
+//	}
+//}

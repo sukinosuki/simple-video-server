@@ -13,7 +13,7 @@ import (
 //var MysqlDB *gorm.DB
 
 func SetupMysql() *gorm.DB {
-	//logMode := logger.Info
+	//logMode := logger.Profile
 	//if config.Env.Debug {
 	//	logMode = logger.Error
 	//}

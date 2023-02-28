@@ -1,9 +1,12 @@
 package user
 
 import (
+	"context"
 	"errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"simple-video-server/models"
+	"simple-video-server/pkg/log"
 	"simple-video-server/util"
 )
 
@@ -44,7 +47,10 @@ func (s *service) Register(userRegister *UserRegister) *models.User {
 }
 
 // Login 登录
-func (s *service) Login(userLogin *UserLogin) *models.User {
+func (s *service) Login(ctx context.Context, userLogin *UserLogin) *models.User {
+	log := log.GetCtx(ctx)
+	log.Info("service login start ", zap.Any("data ", *userLogin))
+
 	user, err := UserDao.FindByEmail(userLogin.Email)
 
 	if err != nil {
@@ -59,6 +65,7 @@ func (s *service) Login(userLogin *UserLogin) *models.User {
 	err = util.Password.Compare(user.Password, userLogin.Password)
 
 	if err != nil {
+		log.Error("邮箱或密码错误")
 		//panic(err)
 		panic(errors.New("邮箱或密码错误(密码错误"))
 	}

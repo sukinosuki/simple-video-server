@@ -7,7 +7,7 @@ type Video struct {
 	CreatedAt time.Time  `json:"created_at" gorm:"not null"`
 	UpdatedAt time.Time  `json:"updated_at" gorm:"not null"`
 	DeletedAt *time.Time `json:"deleted_at"`
-	Uid       uint       `json:"uid" gorm:"not null;primaryKey;"`
+	Uid       uint       `json:"uid" gorm:"not null;index;"`
 	Cover     string     `json:"cover" gorm:"not null;type:string;size:255;"`
 	Title     string     `json:"title" gorm:"not null;type:string;size:50;"`
 	Locked    bool       `json:"locked" gorm:"not null;type:bool;comment:0不锁定1锁定"`

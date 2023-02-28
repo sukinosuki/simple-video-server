@@ -3,6 +3,7 @@ package video
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"simple-video-server/pkg/app_ctx"
 	"simple-video-server/pkg/business_code"
 	"simple-video-server/pkg/log"
@@ -47,10 +48,10 @@ func (ctl *controller) AddHandler(c *gin.Context) (*string, error) {
 }
 
 func (ctl *controller) GetById(c *gin.Context) (string, error) {
-
+	log := log.GetCtx(c.Request.Context())
 	id := c.Param("id")
 
-	log.Info(c, fmt.Sprintf("video id: %s ", id))
+	log.Info("", zap.String("video id ", id))
 
 	return "hanami", nil
 }

@@ -1,46 +1,36 @@
 package log
 
 import (
+	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 	"path/filepath"
 	"simple-video-server/config"
-	"simple-video-server/pkg/app_ctx"
 	"time"
 )
 
 var Logger *zap.Logger
 
-var traceIdKey = "trace-id"
-var uidKey = "uid"
+func GetCtx(ctx context.Context) *zap.Logger {
+	// TODO:
+	log, ok := ctx.Value("log").(*zap.Logger)
+	if ok {
+		return log
+	}
 
-func Info(c *gin.Context, msg string, field ...zap.Field) {
-	traceId, _ := app_ctx.GetTraceId(c)
-	uid, _ := app_ctx.GetUid(c)
-
-	logger := Logger.With(
-		zap.String(traceIdKey, traceId),
-		zap.Uint(uidKey, uid),
-	)
-
-	logger.Info(msg, field...)
+	return Logger
 }
 
-//func Debug(args ...interface{}) {
-//	Logger.Debug(args)
-//}
-//
-//func Warn(args ...interface{}) {
-//	Logger.Warn(args)
-//}
+func AddCtx(ctx context.Context, field ...zap.Field) (context.Context, *zap.Logger) {
+	log := Logger.With(field...)
 
-//func Error(args ...interface{}) {
-//	Logger.Error(args)
-//}
+	ctx = context.WithValue(ctx, "log", log)
+
+	return ctx, log
+}
 
 // func InitLogger() *zap.SugaredLogger {
 func init() {

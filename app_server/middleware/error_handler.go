@@ -5,10 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
+	"go.uber.org/zap"
 	"net/http"
 	"simple-video-server/common"
 	"simple-video-server/pkg/business_code"
 	"simple-video-server/pkg/err_code"
+	"simple-video-server/pkg/log"
 	"simple-video-server/pkg/validation"
 	"strings"
 )
@@ -16,9 +18,13 @@ import (
 var ErrorHandler = func(c *gin.Context) {
 
 	defer func() {
+		log := log.GetCtx(c.Request.Context())
+
 		err := recover()
 
 		if err != nil {
+			log.Error("捕获错误 ", zap.Any("err", err))
+
 			//log.Error("全局错误 err: ", err)
 
 			//if errors.Is(e, &mysql.MySQLError{}) {
@@ -73,7 +79,7 @@ var ErrorHandler = func(c *gin.Context) {
 			}
 
 			// 自定义business错误
-			if e, ok := err.(*business_code.BusinessCode); ok {
+			if e, ok := err.(business_code.BusinessCode); ok {
 				// TODO:
 				c.AbortWithStatusJSON(http.StatusOK, common.AppResponse[any]{
 					Code:   e.Code(),

@@ -9,7 +9,7 @@ import (
 
 func SetupRoutes(r *gin.RouterGroup) {
 
-	v1 := r.Group("/api/v1", middleware.TraceHandler, middleware.ErrorHandler, middleware.RequestLogHandler)
+	v1 := r.Group("/api/v1", middleware.TraceHandler, middleware.PreAuthorizeHandler, middleware.ErrorHandler, middleware.RequestLogHandler)
 
 	video.SetupRoutes(v1)
 

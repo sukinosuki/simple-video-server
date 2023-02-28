@@ -20,9 +20,11 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 }
 
 var RequestLogHandler = func(c *gin.Context) {
+	log := log.GetCtx(c.Request.Context())
 
 	data := ""
-	if c.Request.Header.Get("Content-Type") == "application/json" {
+	contentType := c.Request.Header.Get("Content-Type")
+	if contentType == "application/json" {
 		_bytes, err := io.ReadAll(c.Request.Body)
 
 		// 重新赋值, 不然c.Next()之后的操作会读取不到body的值(参考: https://blog.csdn.net/testapl/article/details/122489448
@@ -33,10 +35,11 @@ var RequestLogHandler = func(c *gin.Context) {
 		}
 	}
 
-	//log.Info(c, "%s | %s | data: %s", c.Request.Method, c.Request.RequestURI, data)
-	log.Info(c, "",
+	//log.Profile(c, "%s | %s | data: %s", c.Request.Method, c.Request.RequestURI, data)
+	log.Info("请求开始",
 		zap.String("method", c.Request.Method),
 		zap.String("uri", c.Request.RequestURI),
+		zap.String("content-type", contentType),
 		zap.String("data", data))
 
 	blw := &bodyLogWriter{
@@ -52,7 +55,7 @@ var RequestLogHandler = func(c *gin.Context) {
 
 	resData := blw.body.String()
 
-	log.Info(c, "请求结束",
+	log.Info("请求结束",
 		zap.Int("status_code", statusCode),
 		zap.String("res", resData),
 	)

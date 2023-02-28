@@ -1,52 +1,63 @@
 package user
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"simple-video-server/common"
 	"simple-video-server/models"
 	"simple-video-server/pkg/app_ctx"
 	"simple-video-server/pkg/app_jwt"
+	"simple-video-server/pkg/log"
+	"time"
 )
 
-type controller struct {
+type _api struct {
+	common.BaseApi
 }
 
-var Controller = &controller{}
+var Api = &_api{
+	common.BaseApi{
+		Module: "user",
+		//Log:  common.BaseApiLog{},
+	},
+}
 
 // RegisterHandler
 // @Tag.name 用户管理
 // @Summary 注册summary
 // @Description 注册description
 // @Param data body UserRegister true "登录参数"
-// @Router /api/v1/user/register [post]
+// @Router /_api/v1/user/register [post]
 // @Success 200 {object} LoginRes "成功响应"
-func (ctl *controller) RegisterHandler(c *gin.Context) (*LoginRes, error) {
-	userRegister := &UserRegister{}
+func (api *_api) RegisterHandler(c *gin.Context) (*LoginRes, error) {
+	//api.Build(c, "register")
+	log := log.GetCtx(c.Request.Context())
 
-	err := c.ShouldBindJSON(userRegister)
+	log.Info("用户注册开始")
+
+	traceId, _ := app_ctx.GetTraceId(c)
+	log.Info("register1  ", zap.String("trace id ", traceId))
+
+	c.Set("name", 233)
+	time.Sleep(3 * time.Second)
+
+	traceId, _ = app_ctx.GetTraceId(c)
+	log.Info("register2 ", zap.String("trace id ", traceId))
+
+	var userRegister UserRegister
+
+	err := c.ShouldBindJSON(&userRegister)
 	if err != nil {
 		panic(err)
-		//if errs, ok := err.(validator.ValidationErrors); ok {
-		//	errorsMap := errs.Translate(validation.Trans)
-		//
-		//	msg := ""
-		//
-		//	for _, v := range errorsMap {
-		//		msg = v
-		//		break
-		//	}
-		//	fmt.Println("msg ", msg)
-		//
-		//	//return nil, errors.New(msg)
-		//	//return nil, business_code.RequestErr
-		//	return nil, err_code.RequestErr(msg, err.Error())
-		//}
-		//
-		//return nil, err
 	}
 
-	user := Service.Register(userRegister)
+	user := Service.Register(&userRegister)
 
 	token, err := app_jwt.AppJwt.Create(user.ID)
+	if err != nil {
+		panic(err)
+	}
 
 	loginRes := &LoginRes{
 		user,
@@ -60,23 +71,39 @@ func (ctl *controller) RegisterHandler(c *gin.Context) (*LoginRes, error) {
 // @Summary 登录
 // @Tag.name 用户管理
 // @Param data body UserLogin true "登录参数"
-// @Router /api/v1/user/login [post]
+// @Router /_api/v1/user/login [post]
 // @Success 200 {object} LoginRes
-func (ctl *controller) Login(c *gin.Context) (*LoginRes, error) {
-	userLogin := &UserLogin{}
+func (api *_api) Login(c *gin.Context) (*LoginRes, error) {
 
-	err := c.ShouldBind(userLogin)
+	log := log.GetCtx(c.Request.Context())
+
+	traceId, _ := app_ctx.GetTraceId(c)
+	fmt.Println("login traceid1 ", traceId)
+	log.Info("login 1 ", zap.String("trace id ", traceId))
+	// TODO: 不同请求下的ctx.set是否会冲突
+	//time.Sleep(5 * time.Second)
+
+	traceId, _ = app_ctx.GetTraceId(c)
+	log.Info("login 2", zap.String("trace id ", traceId))
+
+	name, exists := c.Get("name")
+	fmt.Println("name ", name)
+	fmt.Println("exists ", exists)
+
+	var userLogin UserLogin
+
+	err := c.ShouldBind(&userLogin)
 
 	if err != nil {
 		panic(err)
 	}
 
-	user := Service.Login(userLogin)
+	user := Service.Login(c.Request.Context(), &userLogin)
 
 	token, err := app_jwt.AppJwt.Create(user.ID)
 
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	loginRes := &LoginRes{
@@ -87,8 +114,12 @@ func (ctl *controller) Login(c *gin.Context) (*LoginRes, error) {
 	return loginRes, err
 }
 
-func (ctl *controller) Info(c *gin.Context) (*models.User, error) {
+func (api *_api) Profile(c *gin.Context) (*models.User, error) {
+	log := log.GetCtx(c.Request.Context())
+
 	uid, _ := app_ctx.GetUid(c)
+
+	log.Info("获取用户信息 ", zap.Uint("uid", uid))
 
 	user := Service.GetProfile(uid)
 

@@ -6,12 +6,19 @@ import (
 	"simple-video-server/common"
 )
 
-func SetupRoutes(group *gin.RouterGroup) {
+func SetupRoutes(v1 *gin.RouterGroup) {
 
-	//group.POST("/user/register", Controller.Register)
+	// 可能登录了
+	//possibleAuth := v1.Group("", middleware.PreAuthorizeHandler)
+	//v1.GET("/video/:id", middleware.PreAuthorizeHandler, common.ToHandler(Controller.GetById))
+	v1.GET("/video/:id", common.ToHandler(Controller.GetById))
+
+	// 需要登录
+	shouldAuth := v1.Group("", middleware.AuthorizeHandler)
 	// 优化toHandler
-	group.POST("/video", middleware.PreAuthorizeHandler, middleware.AuthorizeHandler, common.ToHandler(Controller.AddHandler))
-
-	group.GET("/video/:id", middleware.PreAuthorizeHandler, common.ToHandler(Controller.GetById))
+	//v1.POST("/video",  common.ToHandler(Controller.AddHandler))
+	{
+		shouldAuth.POST("/video", common.ToHandler(Controller.AddHandler))
+	}
 
 }
