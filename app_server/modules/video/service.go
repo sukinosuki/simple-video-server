@@ -1,19 +1,26 @@
 package video
 
 import (
+	"errors"
 	"fmt"
-	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"mime/multipart"
-	"simple-video-server/config"
+	"gorm.io/gorm"
+	"simple-video-server/app_server/cache"
+	"simple-video-server/constants/like_type"
 	"simple-video-server/constants/video_status"
+	"simple-video-server/core"
 	"simple-video-server/models"
-	"time"
+	"simple-video-server/pkg/business_code"
 )
 
 type service struct {
+	dao   *VideoDao
+	cache *cache.VideoCache
 }
 
-var Service = &service{}
+var Service = &service{
+	dao:   Dao,
+	cache: cache.Video,
+}
 
 func (s *service) Add2(uid uint, add VideoAdd, url string, cover string) error {
 
@@ -26,62 +33,97 @@ func (s *service) Add2(uid uint, add VideoAdd, url string, cover string) error {
 		Status: video_status.Auditing,
 	}
 
-	err := VideoDao.Add(video)
+	err := s.dao.Add(video)
 
 	return err
 	//return db.MysqlDB.Model(&Video{}).Create(video).Error
 }
 
-func (s *service) Add(uid uint, add VideoAdd, file multipart.File, filename string) (string, error) {
-	//创建oss client实例
-	//client, err := oss.New(config.Oss.Endpoint, config.Oss.AccessKeyId, config.Oss.AccessKeySecret)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	////获取存储空间
-	//bucket, err := client.Bucket(config.Oss.BucketName)
-	//if err != nil {
-	//	panic(err)
-	//}
-	fileName := fmt.Sprintf("temp/admin_temp/%d_%d_%s", uid, time.Now().UnixNano(), filename)
-
-	fmt.Printf("fileName: %s\n", fileName)
-
-	//err = bucket.PutObject(fileName, file)
-
-	//if err != nil {
-	//	panic(err)
-	//}
-	err := upload(file, fileName)
+// Get get video
+func (s *service) Get(c *core.Context, vid uint) (*VideoRes, error) {
+	// TODO: 校验video是否上架、审核通过、锁定、删除
+	video, err := s.dao.GetById(vid)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			panic(business_code.RecodeNotFound)
+		}
+
 		panic(err)
 	}
 
-	fullUrl := fmt.Sprintf("https://%s.oss-cn-shenzhen.aliyuncs.com/%s", config.Oss.BucketName, fileName)
-	cover := fmt.Sprintf("%s?x-oss-process=video/snapshot,t_7000,f_jpg,w_800,h_600,m_fast", fullUrl)
+	var isLike = false    //是否点赞
+	var isDislike = false // 是否点踩
+	var isCollect = false // 是否收藏
+	likeCount, _ := s.cache.GetVideoLikeCount(vid)
+	if err != nil {
+		panic(err)
+	}
+	dislikeCount, _ := s.cache.GetVideoDislikeCount(vid)
+	collectionCount, err := s.dao.AllCollectionCount(vid)
+	if err != nil {
+		panic(err)
+	}
+	// 未登录
+	if c.Authorized {
+		likeType, err := cache.Like.GetLikeTypeByUserAndVideo(*c.UID, vid)
+		if err != nil {
+			return nil, err
+		}
+		isLike = like_type.Like.Is(likeType)
+		isDislike = like_type.Dislike.Is(likeType)
+		//isCollect, _ = s.dao.IsCollect(*c.UID, vid)
+		isCollect, _ = s.dao.IsCollectBySqlx(*c.UID, vid)
+	}
 
-	err = Service.Add2(uid, add, fullUrl, cover)
+	videoRes := &VideoRes{
+		Video:           video,
+		IsLike:          isLike,
+		IsDislike:       isDislike,
+		IsCollect:       isCollect,
+		LikeCount:       likeCount,
+		DislikeCount:    dislikeCount,
+		CollectionCount: collectionCount,
+	}
 
-	return fullUrl, err
+	return videoRes, err
+
 }
 
-func upload(file multipart.File, fileName string) error {
-	client, err := oss.New(config.Oss.Endpoint, config.Oss.AccessKeyId, config.Oss.AccessKeySecret)
+// Add add video
+func (s *service) Add(uid uint, add *VideoAdd) (*models.Video, error) {
+
+	snapshot := fmt.Sprintf("%s?x-oss-process=video/snapshot,t_7000,f_jpg,w_800,h_600,m_fast", add.Url)
+
+	video := &models.Video{
+		Uid:      uid,
+		Title:    add.Title,
+		Cover:    add.Cover,
+		Url:      add.Url,
+		Locked:   false,                 //默认未锁定
+		Status:   video_status.Auditing, //默认审核中
+		Snapshot: snapshot,
+	}
+
+	err := s.dao.Add(video)
+
+	return video, err
+}
+
+// Update update video
+func (s *service) Update(c *core.Context, videoUpdate *VideoUpdate) error {
+	vid := c.GetId()
+
+	err := s.dao.Update(*c.UID, vid, videoUpdate)
 	if err != nil {
 		panic(err)
 	}
 
-	//获取存储空间
-	bucket, err := client.Bucket(config.Oss.BucketName)
-	if err != nil {
-		panic(err)
-	}
-	//fileName := fmt.Sprintf("temp/admin_temp/%d_%d_%s", uid, time.Now().UnixNano(), filename)
+	return err
+}
 
-	fmt.Printf("fileName: %s\n", fileName)
-
-	err = bucket.PutObject(fileName, file)
+// Delete delete video
+func (s *service) Delete(c *core.Context, vid uint) error {
+	err := s.dao.Delete(*c.UID, vid)
 
 	return err
 }

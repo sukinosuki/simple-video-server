@@ -1,56 +1,67 @@
 package video
 
 import (
-	"fmt"
-	"go.uber.org/zap"
 	"simple-video-server/core"
-	"simple-video-server/pkg/business_code"
-	"simple-video-server/pkg/log"
 )
 
-type controller struct {
+type _api struct {
+	service *service
 }
 
-var Controller = &controller{}
-
-func (ctl *controller) Add(c *core.Context) (*string, error) {
-	//uid, _ := app_ctx.GetUid(c.Context)
-	//fmt.Println("uid ", uid)
-
-	var form VideoAdd
-
-	err := c.ShouldBind(&form)
-	if err != nil {
-		panic(err)
-	}
-
-	file, header, err := c.Request.FormFile("file")
-
-	// TODO: 校验文件大小、格式、是否存在
-	if err != nil {
-		panic(business_code.EmptyUploadFile)
-	}
-
-	fmt.Printf("filename: %s, size: %d \n", header.Filename, header.Size)
-
-	if err != nil {
-		panic(err)
-	}
-
-	url, err := Service.Add(*c.UID, form, file, header.Filename)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return &url, nil
+var Api = &_api{
+	service: Service,
 }
 
-func (ctl *controller) GetById(c *core.Context) (string, error) {
-	log := log.GetCtx(c.Request.Context())
-	id := c.Param("id")
+func (api *_api) Add(c *core.Context) (bool, error) {
+	var videoAdd VideoAdd
 
-	log.Info("", zap.String("video id ", id))
+	err := c.ShouldBind(&videoAdd)
+	if err != nil {
+		panic(err)
+	}
 
-	return "hanami", nil
+	_, err = Service.Add(*c.UID, &videoAdd)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return true, nil
+}
+
+func (api *_api) GetById(c *core.Context) (*VideoRes, error) {
+
+	id := c.GetId()
+
+	videoRes, err := api.service.Get(c, id)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return videoRes, nil
+}
+
+func (api *_api) Update(c *core.Context) (bool, error) {
+	var videoUpdate VideoUpdate
+	err := c.ShouldBind(&videoUpdate)
+	if err != nil {
+		panic(err)
+	}
+
+	err = api.service.Update(c, &videoUpdate)
+	if err != nil {
+		panic(err)
+	}
+
+	return true, err
+}
+
+func (api *_api) Delete(c *core.Context) (bool, error) {
+	err := api.service.Delete(c, c.GetId())
+	if err != nil {
+		panic(err)
+	}
+
+	return true, err
 }

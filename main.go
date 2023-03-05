@@ -10,9 +10,10 @@ import (
 // @description 描述111
 func main() {
 
-	global.MysqlDB = db.SetupMysql()
+	//global.MysqlDB = db.SetupMysql()
+	global.MysqlDB = db.GetOrmDB()
 
-	global.RDB = db.SetupRedis()
+	global.RDB = db.GetRedisDB()
 
 	SetupRouter()
 }

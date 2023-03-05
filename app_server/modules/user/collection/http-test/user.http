@@ -13,26 +13,10 @@ Content-Type: application/json
     client.global.set("auth_token", response.body.data.token); 
 %}
 
-### @name 32
-# @name register
-POST {{host}}/api/v1/user/register
-Content-Type: application/json
-
-{
-  "email": "miiro@qq",
-  "password": "233233"
-}
-
-###
-# @name get user info
-GET {{host}}/api/v1/user/profile?name=hanami
-#Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2Nzc2Mjc1MDgsIlVJRCI6MX0.HIosjWiLlwGKcrT9Mq97QqlNQVVRM7-SW59NsQfmZ54
-Authorization: {{auth_token}}
-
 ###
 # @name add video
 POST {{host}}/api/v1/video
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzcyNjk0NzYsIlVpZCI6MX0.W1xmF_PaqiFVJGe3-8NK6aMlYoYLwT-bBKdFxk0aVO4
+Authorization: {{auth_token}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
 --WebAppBoundary
@@ -55,7 +39,7 @@ Content-Type: image/jpeg
 
 # @name get video by id
 GET {{host}}/api/v1/video/1?name=hanami
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzcyNjk0NzYsIlVpZCI6MX0.W1xmF_PaqiFVJGe3-8NK6aMlYoYLwT-bBKdFxk0aVO4
+Authorization: {{auth_token}}
 
 ###
 # @name 获取收藏 

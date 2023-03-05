@@ -53,10 +53,10 @@ var RequestLogHandler = func(c *gin.Context) {
 
 	statusCode := c.Writer.Status()
 
-	resData := blw.body.String()
+	//resData := blw.body.String()
 
 	log.Info("请求结束",
 		zap.Int("status_code", statusCode),
-		zap.String("res", resData),
+		//zap.String("res", resData),
 	)
 }

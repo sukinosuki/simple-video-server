@@ -3,6 +3,7 @@ package core
 import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 // Context 自定义context
@@ -10,7 +11,16 @@ import (
 // https://www.jianshu.com/p/4ccdcb169345
 type Context struct {
 	*gin.Context
-	UID     *uint
-	TraceID string
-	Log     *zap.Logger
+	UID        *uint // 用户id
+	Authorized bool
+	TraceID    string      // trace id
+	Log        *zap.Logger // log
+}
+
+// GetId 获取path上的id(只能是): /api/v1/user/:id
+func (ctx *Context) GetId() uint {
+
+	id, _ := strconv.Atoi(ctx.Param("id"))
+
+	return uint(id)
 }

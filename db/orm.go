@@ -10,22 +10,21 @@ import (
 	"time"
 )
 
-//var MysqlDB *gorm.DB
+var _ormDB *gorm.DB
 
-func SetupMysql() *gorm.DB {
-	//logMode := logger.Profile
-	//if config.Env.Debug {
-	//	logMode = logger.Error
-	//}
+func GetOrmDB() *gorm.DB {
+	return _ormDB
+}
 
-	args := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+func init() {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		config.Mysql.Username,
 		config.Mysql.Password,
 		config.Mysql.Host,
 		config.Mysql.Port,
 		config.Mysql.Database)
 
-	db, err := gorm.Open(mysql.Open(args), &gorm.Config{
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 			//TablePrefix:   "",
@@ -36,7 +35,14 @@ func SetupMysql() *gorm.DB {
 	db.AutoMigrate(
 		&models.User{},
 		&models.Video{},
-		&models.VideoCollection{},
+		&models.UserVideoCollection{},
+		&models.UserVideoLike{},
+
+		//&test_student.Student{},
+		//&test_student.Information{},
+		//&test_student.Book{},
+		//&test_student.Language{},
+		//&test_student.StudentLanguage{},
 	)
 
 	if err != nil {
@@ -53,10 +59,8 @@ func SetupMysql() *gorm.DB {
 	sqlDb.SetConnMaxLifetime(time.Hour)
 
 	if config.Env.Debug {
-		//MysqlDB = db.Debug()
-		return db.Debug()
+		db = db.Debug()
 	}
 
-	//MysqlDB = db
-	return db
+	_ormDB = db
 }

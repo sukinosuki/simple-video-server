@@ -2,24 +2,17 @@ package user
 
 import (
 	"go.uber.org/zap"
-	"simple-video-server/common"
 	"simple-video-server/core"
 	"simple-video-server/models"
 	"simple-video-server/pkg/app_jwt"
-	"strconv"
 )
 
 type _api struct {
-	common.BaseApi
 	service *service
 }
 
 var Api = &_api{
-	common.BaseApi{
-		Module: "user",
-		//Log:  common.BaseApiLog{},
-	},
-	Service,
+	GetUserService(),
 }
 
 // RegisterHandler
@@ -102,53 +95,4 @@ func (api *_api) Profile(c *core.Context) (*models.User, error) {
 	user := Service.GetProfile(c, *c.UID)
 
 	return user, nil
-}
-
-// AddCollection 新增收藏
-func (api *_api) AddCollection(c *core.Context) (bool, error) {
-
-	var data AddCollection
-	err := c.ShouldBind(&data)
-	if err != nil {
-		panic(err)
-	}
-
-	err = api.service.AddCollection(c, data.VID)
-	if err != nil {
-		panic(err)
-	}
-
-	return true, nil
-}
-
-func (api *_api) DeleteCollection(c *core.Context) (bool, error) {
-
-	idStr := c.Param("id")
-	vid, err := strconv.Atoi(idStr)
-	if err != nil {
-		panic(err)
-	}
-	//var data AddCollection
-	//err := c.ShouldBind(&data)
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	err = api.service.DeleteCollection(c, uint(vid))
-	if err != nil {
-		panic(err)
-	}
-
-	return true, nil
-}
-
-func (api *_api) GetAllCollection(c *core.Context) ([]models.VideoCollection, error) {
-
-	//	TODO:分页
-	collections, err := api.service.GetAllCollection(c)
-	if err != nil {
-		panic(err)
-	}
-
-	return collections, nil
 }

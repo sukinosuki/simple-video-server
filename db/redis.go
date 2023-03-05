@@ -6,7 +6,13 @@ import (
 	"simple-video-server/config"
 )
 
-func SetupRedis() *redis.Client {
+var rdb *redis.Client
+
+func GetRedisDB() *redis.Client {
+	return rdb
+}
+
+func init() {
 
 	db := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port),
@@ -16,5 +22,5 @@ func SetupRedis() *redis.Client {
 
 	fmt.Println("redis init complete")
 
-	return db
+	rdb = db
 }

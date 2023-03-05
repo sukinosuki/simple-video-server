@@ -1,0 +1,35 @@
+# @name login
+POST {{host}}/api/v1/user/login
+Content-Type: application/json
+
+{
+  "email": "miiro@qq.com",
+  "password": "233233"
+}
+
+> {%
+    client.log(response.body.data.token);
+
+    client.global.set("auth_token", response.body.data.token);
+%}
+
+###
+# @name get video 
+GET {{host}}/api/v1/video/1
+Authorization: {{auth_token}}
+
+###
+# @name update video
+PUT {{host}}/api/v1/video/1
+Authorization: {{auth_token}}
+Content-Type: application/json
+
+{
+  "title": "标题2222222222222",
+  "cover": "cover2211"
+}
+
+###
+# @name delete by id
+DELETE {{host}}/api/v1/video/2
+Authorization: {{auth_token}}

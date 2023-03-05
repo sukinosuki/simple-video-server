@@ -3,22 +3,25 @@ package video
 import (
 	"github.com/gin-gonic/gin"
 	"simple-video-server/app_server/middleware"
-	"simple-video-server/common"
+	"simple-video-server/core"
 )
 
 func SetupRoutes(v1 *gin.RouterGroup) {
 
 	// 可能登录了
 	//possibleAuth := v1.Group("", middleware.PreAuthorizeHandler)
-	//v1.GET("/video/:id", middleware.PreAuthorizeHandler, common.ToHandler(Controller.GetById))
-	v1.GET("/video/:id", common.ToHandler(Controller.GetById, "video"))
+	//v1.GET("/video/:id", middleware.PreAuthorizeHandler, common.ToHandler(Api.GetById))
+	v1.GET("/video/:id", core.ToHandler(Api.GetById, "video"))
 
 	// 需要登录
 	shouldAuth := v1.Group("", middleware.AuthorizeHandler)
 	// 优化toHandler
-	//v1.POST("/video",  common.ToHandler(Controller.Add))
 	{
-		shouldAuth.POST("/video", common.ToHandler(Controller.Add, "video"))
+		shouldAuth.POST("/video", core.ToHandler(Api.Add, "video"))
+
+		shouldAuth.PUT("/video/:id", core.ToHandler(Api.Update, "video"))
+
+		shouldAuth.DELETE("/video/:id", core.ToHandler(Api.Delete, "video"))
 	}
 
 }

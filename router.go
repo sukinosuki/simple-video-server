@@ -64,6 +64,7 @@ func SetupRouter() {
 
 	//
 	app_server.SetupRoutes(AppRouter)
+
 	//
 
 	Run(router)

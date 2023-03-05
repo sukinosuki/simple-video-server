@@ -1,0 +1,57 @@
+###
+# @name add student
+POST {{host}}/api/v1/student
+Content-Type: application/json
+
+{
+  "name": "hanami22"
+}
+
+###
+# @name add information
+POST {{host}}/api/v1/student-information
+Content-Type: application/json
+
+{
+  "age": 23,
+  "student_id": 1
+}
+
+###
+# @name get student by id
+GET {{host}}/api/v1/student/1
+
+###
+# @name get all student
+GET {{host}}/api/v1/student
+
+###
+# @name add book
+POST {{host}}/api/v1/student-book
+Content-Type: application/json
+
+#"Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`simple_video_server`.`book`, CONSTRAINT `fk_student_book` FOREIGN KEY (`student_id`) REFERENCES `student` (`id`))"
+
+{
+  "name": "book2",
+  "student_id": 1
+}
+
+###
+# @name add language
+POST {{host}}/api/v1/language
+Content-Type: application/json
+
+{
+  "name": "chinese"
+}
+
+###
+# @name bind student and language
+POST {{host}}/api/v1/bind-student-language
+Content-Type: application/json
+
+{
+  "student_id": 1,
+  "language_id": [1]
+}

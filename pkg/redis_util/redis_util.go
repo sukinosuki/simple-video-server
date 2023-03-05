@@ -6,9 +6,8 @@ import (
 	"simple-video-server/pkg/global"
 )
 
-var ctx = context.Background()
-
 func Set[T any](key string, v T) error {
+	var ctx = context.Background()
 
 	bytes, err := json.Marshal(v)
 
@@ -22,6 +21,7 @@ func Set[T any](key string, v T) error {
 }
 
 func Get[T any](key string) (*T, error) {
+	var ctx = context.Background()
 	result, err := global.RDB.Get(ctx, key).Result()
 
 	if err != nil {
