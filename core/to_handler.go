@@ -23,6 +23,7 @@ func ToHandler[T any](handler func(coreContext *Context) (T, error), moduleName 
 
 		// 注入logger
 		logger := log.GetCtx(c.Request.Context())
+		//coreContext.Log = logger.With(zap.String("module", moduleName), zap.Uint("uid", *uid))
 		coreContext.Log = logger.With(zap.String("module", moduleName))
 
 		// 注入trace id

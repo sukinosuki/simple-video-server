@@ -1,7 +1,7 @@
 package user
 
 import (
-	"simple-video-server/models"
+	"time"
 )
 
 type UserRegister struct {
@@ -14,12 +14,24 @@ type UserLogin struct {
 	Password string `json:"password" form:"password" binding:"required,min=6,max=12" label:"密码"`
 }
 
-type UserProfile struct {
-	LikeCount       int //点赞数
-	CollectionCount int // 收藏数
+type Profile struct {
+	User            ProfileUser `json:"user" gorm:"embedded;embeddedPrefix:user_"`
+	LikeCount       int64       `json:"like_count"`       // 所有视频点赞数
+	DislikeCount    int64       `json:"dislike_count"`    // 所有视频点踩数
+	CollectionCount int64       `json:"collection_count"` // 收藏数
+	VideoCount      int64       `json:"video_count"`      // 发布的视频数
+	FlowerCount     int64       `json:"fans_count"`       // 粉丝数
+}
+
+type ProfileUser struct {
+	ID        uint      `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Enabled   bool      `json:"enabled"`
+	Nickname  string    `json:"nickname"`
+	Email     string    `json:"email"`
 }
 
 type LoginRes struct {
-	User  *models.User `json:"user"`
-	Token string       `json:"token"`
+	Profile *Profile `json:"profile"`
+	Token   string   `json:"token"`
 }

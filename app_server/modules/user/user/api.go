@@ -3,7 +3,6 @@ package user
 import (
 	"go.uber.org/zap"
 	"simple-video-server/core"
-	"simple-video-server/models"
 	"simple-video-server/pkg/app_jwt"
 )
 
@@ -36,15 +35,15 @@ func (api *_api) RegisterHandler(c *core.Context) (*LoginRes, error) {
 		panic(err)
 	}
 
-	user := Service.Register(c, &userRegister)
+	profile := Service.Register(c, &userRegister)
 
-	token, err := app_jwt.AppJwt.Create(user.ID)
+	token, err := app_jwt.AppJwt.Create(profile.User.ID)
 	if err != nil {
 		panic(err)
 	}
 
 	loginRes := &LoginRes{
-		user,
+		profile,
 		token,
 	}
 
@@ -58,28 +57,26 @@ func (api *_api) RegisterHandler(c *core.Context) (*LoginRes, error) {
 // @Router /_api/v1/user/login [post]
 // @Success 200 {object} LoginRes
 func (api *_api) Login(c *core.Context) (*LoginRes, error) {
-	log := c.Log.With(zap.String("caller", "user_api/login"))
-
-	log.Info("登录开始")
 
 	var userLogin UserLogin
 	err := c.ShouldBind(&userLogin)
 
 	if err != nil {
-		//TODO:返回明确的参数错误信息
 		panic(err)
 	}
 
-	user := Service.Login(c, &userLogin)
+	profile := Service.Login(c, &userLogin)
 
-	token, err := app_jwt.AppJwt.Create(user.ID)
+	c.Log.Info("设置token开始")
+	token, err := app_jwt.AppJwt.Create(profile.User.ID)
+	c.Log.Info("设置token结束")
 
 	if err != nil {
 		panic(err)
 	}
 
 	loginRes := &LoginRes{
-		user,
+		profile,
 		token,
 	}
 
@@ -87,12 +84,12 @@ func (api *_api) Login(c *core.Context) (*LoginRes, error) {
 }
 
 // 用户信息
-func (api *_api) Profile(c *core.Context) (*models.User, error) {
+func (api *_api) Profile(c *core.Context) (*Profile, error) {
 	log := c.Log.With(zap.String("caller", "user_api/profile"))
 
 	log.Info("获取用户信息")
 
-	user := Service.GetProfile(c, *c.UID)
+	profile := Service.GetProfile(c, *c.UID)
 
-	return user, nil
+	return profile, nil
 }

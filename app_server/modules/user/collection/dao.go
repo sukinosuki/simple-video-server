@@ -20,37 +20,7 @@ var Dao = &_dao{
 	model: &models.UserVideoCollection{},
 }
 
-//const (
-//	_queryVideoCollectionSql = `SELECT
-//		vc.vid,
-//		vc.created_at,
-//		v.title,
-//		v.cover
-//	FROM
-//		video_collection vc
-//		LEFT JOIN video v ON vc.vid = v.id
-//	WHERE
-//		vc.uid = ?
-//	ORDER BY
-//		vc.created_at DESC
-//		LIMIT ?,?`
-//)
-
-//func GetCollectionDao() *_dao {
-//	if Dao == nil {
-//		Dao = &_dao{
-//			db:    db.GetOrmDB(),
-//			sdb:   db.GetSqlxDB(),
-//			model: &models.UserVideoCollection{},
-//		}
-//
-//		return Dao
-//	}
-//
-//	return Dao
-//}
-
-// Add AddCollection 新增收藏
+// Add AddCollection 用户新增收藏
 func (d *_dao) Add(collection *models.UserVideoCollection) error {
 	return d.db.Model(d.model).Create(collection).Error
 }
@@ -58,9 +28,10 @@ func (d *_dao) Add(collection *models.UserVideoCollection) error {
 // Delete 删除用户收藏
 func (d *_dao) Delete(uid uint, vid uint) error {
 	// delete操作记得加上where条件
-	//tx := d.tx.Model(&models.UserVideoCollection{})
 	tx := d.db.Model(d.model)
-	err := tx.Where("uid = ? AND vid = ?", uid, vid).Limit(1).Delete(d.model).Error
+	err := tx.Where("uid = ? AND vid = ?", uid, vid).
+		Limit(1).
+		Delete(d.model).Error
 
 	return err
 }
@@ -72,8 +43,10 @@ func (d *_dao) GetAll(uid uint, query *CollectionQuery) ([]*UserVideoCollectionR
 	tx := d.db.Model(d.model)
 
 	err := tx.Where("user_video_collection.uid = ?", uid).
-		Select("video.id", "video.title", "video.cover", "video.created_at").
+		Select("video.id", "video.title", "video.cover", "video.created_at", "user.id user_id", "user.nickname user_nickname").
 		Joins("left join video on user_video_collection.vid = video.id").
+		Joins("left join user on user.id = video.uid").
+		Order("created_at desc").
 		Offset(query.GetSafeOffset()).
 		Limit(query.GetSafeSize()).
 		Find(&collection).Error
@@ -81,7 +54,7 @@ func (d *_dao) GetAll(uid uint, query *CollectionQuery) ([]*UserVideoCollectionR
 	return collection, err
 }
 
-func (d *_dao) IsVideoExists(vid uint) (bool, error) {
+func (d *_dao) IsVideoExists(vid uint) (bool, *models.Video, error) {
 	tx := d.db.Model(&models.Video{})
 
 	var video models.Video
@@ -90,13 +63,13 @@ func (d *_dao) IsVideoExists(vid uint) (bool, error) {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
+			return false, nil, nil
 		}
 
-		return false, err
+		return false, nil, err
 	}
 
-	return true, nil
+	return true, &video, nil
 }
 
 //func (d *_dao) GetAll2(uid uint) ([]*UserVideoCollectionRes, error) {
@@ -135,9 +108,6 @@ func (d *_dao) IsVideoExists(vid uint) (bool, error) {
 
 // IsCollect 用户是否已收藏
 func (d *_dao) IsCollect(uid, vid uint) (bool, error) {
-	//var userVideoCollection *models.UserVideoCollection
-
-	//var count int64
 	tx := d.db.Model(d.model)
 
 	var collection models.UserVideoCollection

@@ -36,7 +36,7 @@ func (s *service) Add2(uid uint, add VideoAdd, url string, cover string) error {
 	err := s.dao.Add(video)
 
 	return err
-	//return db.MysqlDB.Model(&Video{}).Create(video).Error
+	//return db.MysqlDB.Model(&Video{}).Add(video).Error
 }
 
 func (s *service) GetAll(c *core.Context, query *VideoQuery) ([]VideoSimple, error) {
@@ -105,8 +105,8 @@ func (s *service) Add(uid uint, add *VideoAdd) (*models.Video, error) {
 		Title:    add.Title,
 		Cover:    add.Cover,
 		Url:      add.Url,
-		Locked:   false,                 //默认未锁定
-		Status:   video_status.Auditing, //默认审核中
+		Locked:   false,                    // 默认未锁定
+		Status:   video_status.AuditPermit, // 没后台审核默认审核通过
 		Snapshot: snapshot,
 	}
 

@@ -2,7 +2,6 @@ package collection
 
 import (
 	"simple-video-server/core"
-	"strconv"
 )
 
 type _api struct {
@@ -32,18 +31,9 @@ func (api *_api) Add(c *core.Context) (bool, error) {
 
 func (api *_api) Delete(c *core.Context) (bool, error) {
 
-	idStr := c.Param("id")
-	vid, err := strconv.Atoi(idStr)
-	if err != nil {
-		panic(err)
-	}
-	//var data Add
-	//err := c.ShouldBind(&data)
-	//if err != nil {
-	//	panic(err)
-	//}
+	id := c.GetId()
 
-	err = api.service.Delete(c, uint(vid))
+	err := api.service.Delete(c, id)
 	if err != nil {
 		panic(err)
 	}

@@ -2,6 +2,7 @@ package collection
 
 import (
 	"errors"
+	"simple-video-server/constants/video_status"
 	"simple-video-server/core"
 	"simple-video-server/models"
 )
@@ -24,61 +25,49 @@ func GetCollectionService() *Service {
 }
 
 func (s *Service) Add(c *core.Context, vid uint) error {
+	uid := *c.UID
 	// TODO: 视频是否存在
-	exists, err := s.dao.IsVideoExists(vid)
+	exists, video, err := s.dao.IsVideoExists(vid)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if !exists {
-		// TODO:
-		panic(errors.New("记录不存在"))
+		// TODO: 可以直接返回添加收藏失败不返回详情的添加失败信息
+		return errors.New("记录不存在")
 	}
 
-	//TODO:验证video是否为生效状态(是否存在、删除、审核通过
-	exists, err = s.dao.IsCollect(*c.UID, vid)
-	//TODO:不需要让用户知道详情的信息，可以直接返回添加失败
-	// 已收藏, 直接返回成功
+	// 校验视频是否被锁定、是否审核通过
+	if video.Locked || video.Status != video_status.AuditPermit {
+		// TODO: 可以直接返回添加收藏失败不返回详情的添加失败信息
+		return errors.New("视频被锁定或者审核未通过")
+	}
+
+	exists, err = s.dao.IsCollect(uid, vid)
+	// 已收藏
 	if exists {
-		// TODO:
-		panic(errors.New("重复收藏"))
+		// TODO: 可以直接返回添加收藏失败不返回详情的添加失败信息
+		return errors.New("重复收藏")
 	}
-
-	// TODO:
-	//// 校验视频是否被锁定、是否审核通过
-	//if video.Locked || video.Status != video_status.AuditPermit {
-	//	// 可以直接返回添加收藏失败
-	//	//panic(errors.New("视频被锁定或者审核未通过"))
-	//	c.Log.Info("视频被锁定或者审核未通过")
-	//}
 
 	collection := &models.UserVideoCollection{
-		UID: *c.UID,
+		UID: uid,
 		VID: vid,
 	}
 
 	err = s.dao.Add(collection)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *Service) Delete(c *core.Context, vid uint) error {
 	err := s.dao.Delete(*c.UID, vid)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // GetAll TODO:分页
 func (s *Service) GetAll(c *core.Context, query *CollectionQuery) ([]*UserVideoCollectionRes, error) {
-	//collections, err := s.dao.GetAll(*c.UID)
 
 	collections, err := s.dao.GetAll(*c.UID, query)
 	if err != nil {
