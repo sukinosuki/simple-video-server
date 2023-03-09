@@ -29,6 +29,24 @@ func (api *_api) Add(c *core.Context) (bool, error) {
 	return true, nil
 }
 
+// GetAll get video list
+func (api *_api) GetAll(c *core.Context) ([]VideoSimple, error) {
+
+	var query VideoQuery
+	err := c.ShouldBind(&query)
+	if err != nil {
+		panic(err)
+	}
+
+	videoSimples, err := api.service.GetAll(c, &query)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return videoSimples, nil
+}
+
 func (api *_api) GetById(c *core.Context) (*VideoRes, error) {
 
 	id := c.GetId()
@@ -49,7 +67,7 @@ func (api *_api) Update(c *core.Context) (bool, error) {
 		panic(err)
 	}
 
-	err = api.service.Update(c, &videoUpdate)
+	err = api.service.Update(c, c.GetId(), &videoUpdate)
 	if err != nil {
 		panic(err)
 	}

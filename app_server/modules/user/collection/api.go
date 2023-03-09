@@ -52,9 +52,13 @@ func (api *_api) Delete(c *core.Context) (bool, error) {
 }
 
 func (api *_api) GetAll(c *core.Context) ([]*UserVideoCollectionRes, error) {
+	var query CollectionQuery
+	err := c.ShouldBind(&query)
+	if err != nil {
+		panic(err)
+	}
 
-	//	TODO:分页
-	collections, err := api.service.GetAll(c)
+	collections, err := api.service.GetAll(c, &query)
 
 	if err != nil {
 		panic(err)

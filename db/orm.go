@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"simple-video-server/app_server/modules/test_student"
 	"simple-video-server/config"
 	"simple-video-server/models"
 	"time"
@@ -38,11 +39,11 @@ func init() {
 		&models.UserVideoCollection{},
 		&models.UserVideoLike{},
 
-		//&test_student.Student{},
-		//&test_student.Information{},
-		//&test_student.Book{},
-		//&test_student.Language{},
-		//&test_student.StudentLanguage{},
+		&test_student.Student{},
+		&test_student.Information{},
+		&test_student.Book{},
+		&test_student.Language{},
+		&test_student.StudentLanguage{},
 	)
 
 	if err != nil {

@@ -6,52 +6,42 @@ import (
 	"simple-video-server/models"
 )
 
-type _userDao struct {
+type _dao struct {
 	db *gorm.DB
 }
 
-var Dao *_userDao
-
-func GetUserDao() *_userDao {
-	if Dao == nil {
-		Dao = &_userDao{
-			db: db.GetOrmDB(),
-		}
-
-		return Dao
-	}
-
-	return Dao
+var Dao = &_dao{
+	db: db.GetOrmDB(),
 }
 
-func (dao *_userDao) GetByEmail(email string) (*models.User, error) {
+func (dao *_dao) GetByEmail(email string) (*models.User, error) {
 	user := &models.User{}
 	err := dao.db.Model(&models.User{}).Where("email = ?", email).First(user).Error
 
 	return user, err
 }
 
-func (dao *_userDao) Create(user *models.User) (uint, error) {
+func (dao *_dao) Create(user *models.User) (uint, error) {
 	result := dao.db.Model(&models.User{}).Create(user)
 
 	return user.ID, result.Error
 }
 
-func (dao *_userDao) FindByEmail(email string) (*models.User, error) {
+func (dao *_dao) FindByEmail(email string) (*models.User, error) {
 	var user models.User
 	err := dao.db.Model(&models.User{}).Where("email = ? ", email).First(&user).Error
 
 	return &user, err
 }
 
-func (dao *_userDao) FindByEmailAndPassword(email string, password string) (*models.User, error) {
+func (dao *_dao) FindByEmailAndPassword(email string, password string) (*models.User, error) {
 	var user models.User
 	err := dao.db.Model(&models.User{}).Where("email = ? and password = ?", email, password).First(&user).Error
 
 	return &user, err
 }
 
-func (dao *_userDao) FindById(uid uint) (*models.User, error) {
+func (dao *_dao) FindById(uid uint) (*models.User, error) {
 	var user models.User
 	err := dao.db.Model(&models.User{}).Where("id = ?", uid).First(&user).Error
 

@@ -1,15 +1,19 @@
 package common
 
-type CodeValue[T any] struct {
-	Code  int
+type CodeValue[K int | string, T any] struct {
+	Code  K
 	Value T
 }
 
-func (cv *CodeValue[T]) Is(code int) bool {
+type IntString = CodeValue[int, string]
+
+type StringString = CodeValue[string, string]
+
+func (cv *CodeValue[K, T]) Is(code K) bool {
 
 	return cv.Code == code
 }
 
-type CodeValues[T any] struct {
-	Maps map[int]CodeValue[T]
+type CodeValues[K int | string, T any] struct {
+	Maps map[int]CodeValue[K, T]
 }

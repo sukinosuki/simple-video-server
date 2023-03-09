@@ -2,116 +2,191 @@ package video
 
 import (
 	"errors"
-	"fmt"
 	"github.com/jmoiron/sqlx"
 	"gorm.io/gorm"
 	"simple-video-server/db"
 	"simple-video-server/models"
 	"simple-video-server/pkg/global"
-	"time"
 )
 
-type VideoDao struct {
-	db  *gorm.DB
-	sdb *sqlx.DB
+type _dao struct {
+	db    *gorm.DB
+	sdb   *sqlx.DB
+	model *models.Video
 }
 
-var Dao = &VideoDao{
-	db:  db.GetOrmDB(),
-	sdb: db.GetSqlxDB(),
+var Dao = &_dao{
+	db:    db.GetOrmDB(),
+	sdb:   db.GetSqlxDB(),
+	model: &models.Video{},
 }
 
-func (d *VideoDao) Add(video *models.Video) error {
+func (d *_dao) Add(video *models.Video) error {
+	tx := d.db.Model(d.model)
 
-	err := global.MysqlDB.Model(&models.Video{}).Create(video).Error
+	err := tx.Create(video).Error
 
 	return err
 }
 
-func (d *VideoDao) GetById(id uint) (*models.Video, error) {
+func (d *_dao) GetById2(id uint) (*models.Video, error) {
 
 	var video models.Video
-	err := global.MysqlDB.Model(&models.Video{}).Where("id = ?", id).First(&video).Error
+	tx := d.db.Model(d.model)
+
+	err := tx.Where("id = ?", id).First(&video).Error
 
 	return &video, err
 }
 
-func (d *VideoDao) IsCollect(uid, vid uint) (bool, error) {
+// GetById get video(with user) by id
+func (d *_dao) GetById(id uint) (*VideoResVideo, error) {
+
+	var video VideoResVideo
+	err := global.MysqlDB.Model(d.model).
+		//Where("video.id = ?", id).
+		Select(
+			"video.id",
+			"video.title",
+			"video.created_at",
+			"video.cover",
+			"video.url",
+			"video.uid",
+			"user.id user_id",
+			"user.nickname user_nickname").
+		Joins("left join user on user.id = video.uid").
+		Where("video.id = ? ", id).
+		First(&video).
+		Error
+
+	return &video, err
+}
+
+func (d *_dao) IsCollect(uid, vid uint) (bool, error) {
 
 	var userVideoCollection models.UserVideoCollection
-	err := d.db.Model(&models.UserVideoCollection{}).Where("uid = ? AND vid = ?", uid, vid).First(&userVideoCollection).Error
+
+	tx := d.db.Model(&models.UserVideoCollection{})
+
+	err := tx.
+		Where("uid = ? AND vid = ?", uid, vid).
+		First(&userVideoCollection).Error
 
 	if err != nil {
+		//记录不存在, 返回false为未收藏
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
+		//返回其它错误在是否需要在service层处理该错误
 		return false, err
 	}
 
+	//返回true为已收藏
 	return true, nil
 }
 
-func (d *VideoDao) IsCollectBySqlx(uid, vid uint) (bool, error) {
-	sql := `
-	SELECT
-		count(*) 
-	FROM
-		user_video_collection 
-	WHERE
-		uid = ? 
-		AND vid = ? 
-		LIMIT 1
-	`
-	var count int64
-	err := db.SqlSelectLog(d.sdb.Get, &count, sql, uid, vid)
-	if err != nil {
-		return false, err
-	}
+//	GetVideoCollectionCountById func (d *_dao) IsCollectBySqlx(uid, vid uint) (bool, error) {
+//		sql := `
+//		SELECT
+//			count(*)
+//		FROM
+//			user_video_collection
+//		WHERE
+//			uid = ?
+//			AND vid = ?
+//			LIMIT 1
+//		`
+//		var count int64
+//		err := db.SqlSelectLog(d.sdb.Get, &count, sql, uid, vid)
+//		if err != nil {
+//			return false, err
+//		}
+//
+//		return count > 0, err
+//	}
+//
 
-	return count > 0, err
-}
-
-func (d *VideoDao) AllCollectionCount(vid uint) (int64, error) {
+// GetVideoCollectionCountById get video's collection count by id
+func (d *_dao) GetVideoCollectionCountById(vid uint) (int64, error) {
 	var count int64
-	err := d.db.Model(&models.UserVideoCollection{}).Where("vid = ? ", vid).Count(&count).Error
+	tx := d.db.Model(&models.UserVideoCollection{})
+
+	err := tx.
+		Where("vid = ? ", vid).
+		Count(&count).Error
 
 	return count, err
 }
 
-func (d *VideoDao) Update(uid, vid uint, update *VideoUpdate) error {
-	//sql := `UPDATE video set title = ?, cover = ?, updated_at = ? WHERE id = ?`
+// GetAll 返回视频列表
+func (d *_dao) GetAll(query *VideoQuery) ([]VideoSimple, error) {
+	var videos []VideoSimple
 
-	//_, err := d.sdb.Exec(sql, update.Title, update.Cover, time.Now(), vid)
+	tx := d.db.Model(d.model)
 
-	_, err := db.SqlExecLog(d.sdb.Exec, updateVideo, update.Title, update.Cover, time.Now(), vid)
-	if err != nil {
-		return err
+	tx.Select("video.id",
+		"video.title",
+		"video.locked",
+		"video.cover",
+		"video.url",
+		"video.created_at",
+		"user.id user_id",
+		"user.nickname user_nickname").
+		Joins("left join user on user.id = video.uid")
+
+	if query.UID != nil {
+		tx.Where("video.uid = ?", query.UID)
 	}
 
-	return nil
+	if query.Lock != nil {
+		tx.Where("video.locked = ?", query.Lock)
+	}
+
+	err := tx.
+		Order(query.GetOrder()).
+		Offset(query.GetSafeOffset()).
+		Limit(query.GetSafeSize()).
+		Find(&videos).Error
+
+	return videos, err
 }
 
-func (d *VideoDao) Delete(uid, vid uint) error {
-	sql := `
-	DELETE 
-	FROM
-		video 
-	WHERE
-		id = ? 
-	AND uid = ? 
-	LIMIT 1
-`
-	result, err := db.SqlExecLog(d.sdb.Exec, sql, vid, uid)
-	if err != nil {
-		return err
-	}
-	affected, err := result.RowsAffected()
+func (d *_dao) Update(uid, vid uint, update *VideoUpdate) error {
 
-	if err != nil {
-		return err
+	db := d.db.Model(d.model)
+
+	video := models.Video{
+		Title: update.Title,
+		Cover: update.Cover,
 	}
 
-	fmt.Println("删除成功 ", affected)
+	// 1.save 会保存所有字段，即使是0值
+	//err := db.Where("uid = ? AND id = ?", uid, vid).Save(video).Error
 
-	return nil
+	// 2.Select 和 Struct （可以选中更新零值字段）
+	//db.Model(&result).Select("Name", "Age").Updates(User{Name: "new_name", Age: 0})
+
+	// 3.Updates 方法支持 struct 和 map[string]interface{} 参数。当使用 struct 更新时，默认情况下，GORM 只会更新非零值的字段
+	result := db.Where("uid = ? AND id = ?", uid, vid).Updates(video)
+
+	//传参错误会更新0 rows
+	//if result.Error == nil && result.RowsAffected == 0 {
+	//	// TODO: 更新无效
+	//	panic(errors.New("update video err, the video is not belong to the user"))
+	//}
+
+	return result.Error
+}
+
+// Delete delete one user's video by id
+func (d *_dao) Delete(uid, vid uint) error {
+
+	db := d.db.Model(d.model)
+
+	err := db.
+		Where("uid = ? AND id = ?", uid, vid).
+		Limit(1).
+		Delete(d.model).Error
+
+	return err
 }

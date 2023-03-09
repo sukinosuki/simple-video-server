@@ -6,11 +6,29 @@ type Student struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name" gorm:"not null;size:12;unique;"`
 	//Information Information `json:"information" gorm:"foreignKey:student_id"`
-	Information Information `json:"information"`
-	Book        []Book      `json:"book"`
-	Language    []Language  `json:"language" gorm:"many2many:student_language"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
+	Information *Information `json:"information"`
+	Book        []Book       `json:"book"`
+	Language    []Language   `json:"language" gorm:"many2many:student_language"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+}
+
+type StudentRes struct {
+	ID uint `json:"id"`
+	//Name          string    `json:"name,omitempty"` // 如果name是空值, 则忽略
+	Name          string    `json:"-"` // 忽略name字段, 不管是否是空值
+	Age           int       `json:"age"`
+	CreatedAt     time.Time `json:"created_at"`
+	InformationID uint      `json:"information_id"`
+}
+
+type StudentRes2 struct {
+	ID uint `json:"id"`
+	//Name          string    `json:"name,omitempty"` // 如果name是空值, 则忽略
+	Name          string    `json:"-"` // 忽略name字段, 不管是否是空值
+	Age           int       `json:"age"`
+	CreatedAt     time.Time `json:"created_at"`
+	InformationID uint      `json:"information_id"`
 }
 
 // Book 一个student有多个book 一对多
@@ -20,6 +38,12 @@ type Book struct {
 	StudentID uint      `json:"student_id" gorm:"not null;uniqueIndex:idx_name_student"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type BookSimple struct {
+	ID        uint      `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // Information 一个学生有一个information 一对一
@@ -40,13 +64,13 @@ type Language struct {
 	Student   []Student `json:"student" gorm:"many2many:student_language"`
 }
 
-//type StudentLanguage struct {
-//	ID         uint      `json:"id"`
-//	CreatedAt  time.Time `json:"created_at"`
-//	UpdatedAt  time.Time `json:"updated_at"`
-//	StudentID  uint      `json:"student_id"`
-//	LanguageID uint      `json:"language_id"`
-//}
+type StudentLanguage struct {
+	//ID         uint      `json:"id"`
+	CreatedAt  time.Time `json:"created_at" gorm:"not null;"`
+	UpdatedAt  time.Time `json:"updated_at" gorm:"not null;"`
+	StudentID  uint      `json:"student_id" gorm:"not null;index"`
+	LanguageID uint      `json:"language_id" gorm:"not null;"`
+}
 
 type StudentAdd struct {
 	Name string `json:"name" form:"name" binding:"required"`

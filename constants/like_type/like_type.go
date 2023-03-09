@@ -10,20 +10,20 @@ import (
 //)
 
 type LikeType struct {
-	common.CodeValue[string]
+	common.CodeValue[int, string]
 }
 
 var likeTypeMap = make(map[int]*LikeType)
 
 var Like = &LikeType{
-	common.CodeValue[string]{
+	common.CodeValue[int, string]{
 		Code:  1,
 		Value: "like",
 	},
 }
 
 var Dislike = &LikeType{
-	common.CodeValue[string]{
+	common.CodeValue[int, string]{
 		Code:  2,
 		Value: "dislike",
 	},
@@ -60,8 +60,8 @@ func GetByCode(code int) (*LikeType, bool) {
 //	typeVo := vo.Type()
 //
 //	for i := 0; i < vo.NumField(); i++ {
-//		if typeVo.Field(i).Name == id {
-//			return vo.Field(i).Interface().(int)
+//		if typeVo.OrderField(i).Name == id {
+//			return vo.OrderField(i).Interface().(int)
 //		}
 //	}
 //	return 0

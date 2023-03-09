@@ -27,7 +27,6 @@ func (api *_api) AddStudent(c *core.Context) (uint, error) {
 	}
 
 	return student.ID, nil
-
 }
 
 func (api *_api) AddInformation(c *core.Context) (uint, error) {
@@ -48,7 +47,7 @@ func (api *_api) AddInformation(c *core.Context) (uint, error) {
 	return information.ID, err
 }
 
-func (api *_api) GetInformation(c *core.Context) (Student, error) {
+func (api *_api) Get(c *core.Context) (any, error) {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -57,7 +56,7 @@ func (api *_api) GetInformation(c *core.Context) (Student, error) {
 		panic(err)
 	}
 
-	student, err := Dao.FindStudentById(uint(id))
+	student, err := Dao.FindStudentById2(uint(id))
 
 	if err != nil {
 		panic(err)
@@ -73,6 +72,15 @@ func (api *_api) GetAll(c *core.Context) ([]Student, error) {
 	}
 
 	return students, err
+}
+
+func (api *_api) GetBooks(c *core.Context) ([]BookSimple, error) {
+	books, err := Dao.GetStudentBooks(4)
+	if err != nil {
+		panic(err)
+	}
+
+	return books, err
 }
 
 func (api *_api) AddBook(c *core.Context) (bool, error) {
@@ -149,7 +157,7 @@ func (api *_api) BindStudentAndLanguage(c *core.Context) (bool, error) {
 		panic(err)
 	}
 
-	err = Dao.BindStudentAndLanguage(data.StudentID, data.LanguageID)
+	err = Dao.BindStudentAndLanguage2(data.StudentID, data.LanguageID)
 	if err != nil {
 		panic(err)
 	}

@@ -10,22 +10,11 @@ import (
 )
 
 type service struct {
-	dao *_userDao
+	dao *_dao
 }
 
-//	var Service = &service{
-//		dao: Dao,
-//	}
-var Service *service
-
-func GetUserService() *service {
-	if Service != nil {
-		return Service
-	}
-
-	return &service{
-		dao: GetUserDao(),
-	}
+var Service = &service{
+	dao: Dao,
 }
 
 // Register 注册

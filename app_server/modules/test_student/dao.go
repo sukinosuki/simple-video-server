@@ -30,11 +30,36 @@ func (d *dao) AddInformation(information *Information) error {
 //	return information, err
 //}
 
-func (d *dao) FindStudentById(id uint) (Student, error) {
-	var student Student
+func (d *dao) FindStudentById(id uint) (StudentRes, error) {
+	var student StudentRes
 	//err := global.MysqlDB.Preload("book").Preload("Information").Where("id = ?", id).First(&student).Error
 	// TODO: Preload参数"Book" "Information" 需要为结构体名称(大写就需要大写)
-	err := global.MysqlDB.Preload("Book").Preload("Information").Where("id = ?", id).First(&student).Error
+	//err := global.MysqlDB.Preload("Book").Preload("Information").Where("id = ?", id).First(&student).Error
+
+	err := global.MysqlDB.Model(&Student{}).
+		Where("student.id = ?", id).
+		Select("student.id", "student.name", "information.id as information_id", "information.age").
+		Joins("left join information on student.id = information.student_id").
+		First(&student).Error
+
+	return student, err
+}
+
+func (d *dao) FindStudentById2(id uint) (any, error) {
+	var student Student
+	//var books []Book
+	//err := global.MysqlDB.Preload("book").Preload("Information").Where("id = ?", id).First(&student).Error
+	// TODO: Preload参数"Book" "Information" 需要为结构体名称(大写就需要大写)
+	//err := global.MysqlDB.Preload("Book").Preload("Information").Where("id = ?", id).First(&student).Error
+
+	err := global.MysqlDB.Model(&Student{}).
+		Where("id = ?", id).
+		Preload("Book").
+		Preload("Language").
+		First(&student).Error
+
+	//err := global.MysqlDB.
+	//	Where("book.student_id = ?", id).Joins("left join student on student.id = book.student_id").Find(&books).Error
 
 	return student, err
 }
@@ -52,6 +77,13 @@ func (d *dao) AddBook(book *Book) error {
 	return err
 }
 
+func (d *dao) GetStudentBooks(studentId uint) ([]BookSimple, error) {
+	var books []BookSimple
+	err := global.MysqlDB.Model(&Book{}).Where("student_id = ?", studentId).Find(&books).Error
+
+	return books, err
+}
+
 func (d *dao) RemoveBook(id uint) error {
 	//global.MysqlDB.Model(&Book{}).Where("id = ?", id).Delete()
 	err := global.MysqlDB.Model(&Book{}).Where("id = ?", id).Delete(&Book{}, id).Error
@@ -66,6 +98,25 @@ func (d *dao) AddLanguage(language *Language) error {
 
 func (d *dao) DeleteLanguage(id uint) error {
 	err := global.MysqlDB.Model(&Language{}).Where("id = ?", id).Error
+
+	return err
+}
+
+func (d *dao) BindStudentAndLanguage2(studentId uint, languageIds []uint) error {
+
+	err := global.MysqlDB.Model(&StudentLanguage{}).Where("student_id = ?", studentId).Delete(&StudentLanguage{}).Error
+	if err != nil {
+		panic(err)
+	}
+
+	var studentLanguages []StudentLanguage
+	for _, v := range languageIds {
+		studentLanguages = append(studentLanguages, StudentLanguage{
+			StudentID:  studentId,
+			LanguageID: v,
+		})
+	}
+	err = global.MysqlDB.Model(&StudentLanguage{}).CreateInBatches(studentLanguages, 1000).Error
 
 	return err
 }

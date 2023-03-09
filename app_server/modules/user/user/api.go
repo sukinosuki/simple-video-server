@@ -12,7 +12,7 @@ type _api struct {
 }
 
 var Api = &_api{
-	GetUserService(),
+	service: Service,
 }
 
 // RegisterHandler
@@ -29,7 +29,7 @@ func (api *_api) RegisterHandler(c *core.Context) (*LoginRes, error) {
 
 	var userRegister UserRegister
 
-	err := c.ShouldBindJSON(&userRegister)
+	err := c.ShouldBind(&userRegister)
 	if err != nil {
 		//log.Error("用户注册请求参数错误 ", zap.String("msg", err.Error()))
 		// TODO: 返回明确的参数错误

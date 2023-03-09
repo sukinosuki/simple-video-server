@@ -13,7 +13,7 @@ import (
 )
 
 type service struct {
-	dao   *VideoDao
+	dao   *_dao
 	cache *cache.VideoCache
 }
 
@@ -39,6 +39,12 @@ func (s *service) Add2(uid uint, add VideoAdd, url string, cover string) error {
 	//return db.MysqlDB.Model(&Video{}).Create(video).Error
 }
 
+func (s *service) GetAll(c *core.Context, query *VideoQuery) ([]VideoSimple, error) {
+	all, err := s.dao.GetAll(query)
+
+	return all, err
+}
+
 // Get get video
 func (s *service) Get(c *core.Context, vid uint) (*VideoRes, error) {
 	// TODO: 校验video是否上架、审核通过、锁定、删除
@@ -59,11 +65,11 @@ func (s *service) Get(c *core.Context, vid uint) (*VideoRes, error) {
 		panic(err)
 	}
 	dislikeCount, _ := s.cache.GetVideoDislikeCount(vid)
-	collectionCount, err := s.dao.AllCollectionCount(vid)
+	collectionCount, err := s.dao.GetVideoCollectionCountById(vid)
 	if err != nil {
 		panic(err)
 	}
-	// 未登录
+	// 已登录
 	if c.Authorized {
 		likeType, err := cache.Like.GetLikeTypeByUserAndVideo(*c.UID, vid)
 		if err != nil {
@@ -72,7 +78,7 @@ func (s *service) Get(c *core.Context, vid uint) (*VideoRes, error) {
 		isLike = like_type.Like.Is(likeType)
 		isDislike = like_type.Dislike.Is(likeType)
 		//isCollect, _ = s.dao.IsCollect(*c.UID, vid)
-		isCollect, _ = s.dao.IsCollectBySqlx(*c.UID, vid)
+		isCollect, _ = s.dao.IsCollect(*c.UID, vid)
 	}
 
 	videoRes := &VideoRes{
@@ -110,10 +116,11 @@ func (s *service) Add(uid uint, add *VideoAdd) (*models.Video, error) {
 }
 
 // Update update video
-func (s *service) Update(c *core.Context, videoUpdate *VideoUpdate) error {
-	vid := c.GetId()
+func (s *service) Update(c *core.Context, vid uint, videoUpdate *VideoUpdate) error {
+	//vid := c.GetId()
 
 	err := s.dao.Update(*c.UID, vid, videoUpdate)
+
 	if err != nil {
 		panic(err)
 	}

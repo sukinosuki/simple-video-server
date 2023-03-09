@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"errors"
 	"simple-video-server/core"
 	"simple-video-server/models"
 )
@@ -17,24 +18,30 @@ func GetCollectionService() *Service {
 	}
 
 	return &Service{
-		dao: GetCollectionDao(),
+		//dao: GetCollectionDao(),
+		dao: Dao,
 	}
 }
 
 func (s *Service) Add(c *core.Context, vid uint) error {
+	// TODO: 视频是否存在
+	exists, err := s.dao.IsVideoExists(vid)
+	if err != nil {
+		panic(err)
+	}
+
+	if !exists {
+		// TODO:
+		panic(errors.New("记录不存在"))
+	}
+
 	//TODO:验证video是否为生效状态(是否存在、删除、审核通过
-	exists, err := s.dao.IsCollect(*c.UID, vid)
+	exists, err = s.dao.IsCollect(*c.UID, vid)
 	//TODO:不需要让用户知道详情的信息，可以直接返回添加失败
-	//if err != nil {
-	//	if errors.Is(err, gorm.ErrRecordNotFound) {
-	//		panic(errors.New("视频不存在"))
-	//	}
-	//
-	//	return err
-	//}
 	// 已收藏, 直接返回成功
 	if exists {
-		return nil
+		// TODO:
+		panic(errors.New("重复收藏"))
 	}
 
 	// TODO:
@@ -61,6 +68,7 @@ func (s *Service) Add(c *core.Context, vid uint) error {
 
 func (s *Service) Delete(c *core.Context, vid uint) error {
 	err := s.dao.Delete(*c.UID, vid)
+
 	if err != nil {
 		return err
 	}
@@ -69,10 +77,10 @@ func (s *Service) Delete(c *core.Context, vid uint) error {
 }
 
 // GetAll TODO:分页
-func (s *Service) GetAll(c *core.Context) ([]*UserVideoCollectionRes, error) {
+func (s *Service) GetAll(c *core.Context, query *CollectionQuery) ([]*UserVideoCollectionRes, error) {
 	//collections, err := s.dao.GetAll(*c.UID)
 
-	collections, err := s.dao.GetAll2(*c.UID)
+	collections, err := s.dao.GetAll(*c.UID, query)
 	if err != nil {
 		return nil, err
 	}

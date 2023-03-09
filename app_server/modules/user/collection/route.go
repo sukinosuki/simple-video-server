@@ -9,16 +9,16 @@ import (
 func SetupRoutes(v1 *gin.RouterGroup) {
 
 	// 需要登录
-	shouldAuth := v1.Group("", middleware.AuthorizeHandler)
+	auth := v1.Group("", middleware.AuthorizeHandler)
 
 	{
 		// 新增收藏
-		shouldAuth.POST("/user/collection/video", core.ToHandler(Api.Add, "collection"))
+		auth.POST("/user/collection/video", core.ToHandler(Api.Add, "collection"))
 
 		// 删除收藏
-		shouldAuth.DELETE("/user/collection/video/:id", core.ToHandler(Api.Delete, "collection"))
+		auth.DELETE("/user/collection/video/:id", core.ToHandler(Api.Delete, "collection"))
 
-		// 获取全部收藏
-		shouldAuth.GET("/user/collection/video", core.ToHandler(Api.GetAll, "collection"))
+		// 获取收藏列表
+		auth.GET("/user/collection/video", core.ToHandler(Api.GetAll, "collection"))
 	}
 }

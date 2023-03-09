@@ -13,6 +13,8 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 	//v1.GET("/video/:id", middleware.PreAuthorizeHandler, common.ToHandler(Api.GetById))
 	v1.GET("/video/:id", core.ToHandler(Api.GetById, "video"))
 
+	v1.GET("/video", core.ToHandler(Api.GetAll, "video"))
+
 	// 需要登录
 	shouldAuth := v1.Group("", middleware.AuthorizeHandler)
 	// 优化toHandler
@@ -23,5 +25,4 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 
 		shouldAuth.DELETE("/video/:id", core.ToHandler(Api.Delete, "video"))
 	}
-
 }

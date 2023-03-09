@@ -4,20 +4,20 @@ import "simple-video-server/common"
 
 // UploadType 上传类型: 视频、图片...
 type UploadType struct {
-	common.CodeValue[string]
+	common.CodeValue[int, string]
 }
 
 var uploadCateMap = make(map[int]*UploadType)
 
 var Video = &UploadType{
-	common.CodeValue[string]{
+	common.CodeValue[int, string]{
 		Code:  1,
 		Value: "video",
 	},
 }
 
 var Picture = &UploadType{
-	common.CodeValue[string]{
+	common.CodeValue[int, string]{
 		Code:  2,
 		Value: "picture",
 	},

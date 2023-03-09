@@ -1,7 +1,8 @@
 package video
 
 import (
-	"simple-video-server/models"
+	"simple-video-server/common"
+	"time"
 )
 
 type VideoAdd struct {
@@ -13,27 +14,53 @@ type VideoAdd struct {
 type VideoUpdate struct {
 	Title string `json:"title" form:"title" binding:"required,max=50"`
 	Cover string `json:"cover" form:"cover" binding:"required,max=50"`
+}
 
-	//VID       string    `db:"vid"`
-	//CreatedAt time.Time `db:"created_at"`
+type VideoQuery struct {
+	common.Pager
+	Lock *bool `json:"lock" form:"lock"`
+	UID  *uint `json:"uid" form:"uid"`
+}
+
+type VideoSimple struct {
+	ID        uint             `json:"id"`
+	CreatedAt time.Time        `json:"created_at"`
+	Cover     string           `json:"cover"`
+	Url       string           `json:"url"`
+	Title     string           `json:"title"`
+	Locked    bool             `json:"locked"`
+	User      *VideoSimpleUser `json:"user" gorm:"embedded;embeddedPrefix:user_"`
+}
+
+type VideoSimpleUser struct {
+	ID       uint   `json:"id"`
+	Nickname string `json:"nickname"`
+}
+
+type VideoResVideo struct {
+	ID        uint              `json:"id"`
+	CreatedAt time.Time         `json:"created_at"`
+	Cover     string            `json:"cover"`
+	Title     string            `json:"title"`
+	Url       string            `json:"url"`
+	Uid       uint              `json:"uid"`
+	User      VideoResVideoUser `json:"user" gorm:"embedded;embeddedPrefix:user_"`
+}
+
+type VideoResVideoUser struct {
+	ID       uint   `json:"id"`
+	Nickname string `json:"nickname"`
 }
 
 type VideoRes struct {
-	Video *models.Video `json:"video"`
-	//点赞数
-	LikeCount int `json:"like_count"`
-	//点踩数
-	DislikeCount int `json:"dislike_count"`
-	//是否点赞
-	IsLike bool `json:"is_like"`
-	// 是否点踩
-	IsDislike bool `json:"is_dislike"`
-	//是否已收藏
-	IsCollect bool `json:"is_collect"`
-	// 收藏数
-	CollectionCount int64 `json:"collection_count"`
-	//评论数
-	CommentCount int64 `json:"comment_count"`
+	Video           *VideoResVideo `json:"video"`
+	LikeCount       int            `json:"like_count"`       //点赞数
+	DislikeCount    int            `json:"dislike_count"`    //点踩数
+	IsLike          bool           `json:"is_like"`          //是否点赞
+	IsDislike       bool           `json:"is_dislike"`       // 是否点踩
+	IsCollect       bool           `json:"is_collect"`       //是否已收藏
+	CollectionCount int64          `json:"collection_count"` // 收藏数
+	CommentCount    int64          `json:"comment_count"`    //评论数
 }
 
 //func init() {
