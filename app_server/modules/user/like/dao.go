@@ -34,7 +34,7 @@ func (dao *Dao) Add(userVideoLike *models.UserVideoLike) error {
 
 func (dao *Dao) Delete(uid, vid uint) error {
 	err := dao.db.Model(&models.UserVideoLike{}).Where("uid = ? AND vid = ?", uid, vid).Limit(1).Delete(&models.UserVideoLike{}).Error
-	//err := dao.db.Delete(like).Error
+	//err := dao.db.Unfollow(like).Error
 
 	return err
 }

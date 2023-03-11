@@ -36,7 +36,7 @@ func (s *service) Add2(uid uint, add VideoAdd, url string, cover string) error {
 	err := s.dao.Add(video)
 
 	return err
-	//return db.MysqlDB.Model(&Video{}).Add(video).Error
+	//return db.MysqlDB.Model(&Video{}).follow(video).Error
 }
 
 func (s *service) GetAll(c *core.Context, query *VideoQuery) ([]VideoSimple, error) {

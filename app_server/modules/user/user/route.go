@@ -28,10 +28,10 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 		////TODO:重复的toHandler方法
 		//
 		//// 新增收藏
-		//shouldAuth.POST("/user/collection/video", common.ToHandler(Api.Add, "user"))
+		//shouldAuth.POST("/user/collection/video", common.ToHandler(Api.follow, "user"))
 		//
 		//// 删除收藏
-		//shouldAuth.DELETE("/user/collection/video/:id", common.ToHandler(Api.Delete, "user"))
+		//shouldAuth.DELETE("/user/collection/video/:id", common.ToHandler(Api.Unfollow, "user"))
 		//
 		//// 获取全部收藏
 		//shouldAuth.GET("/user/collection/video", common.ToHandler(Api.GetAll, "user"))

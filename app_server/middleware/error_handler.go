@@ -91,6 +91,15 @@ var ErrorHandler = func(c *gin.Context) {
 				return
 			}
 
+			// err为string的情况
+			if _, ok := err.(string); ok {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"code": 500,
+					"msg":  err,
+				})
+				return
+			}
+
 			e := err.(error)
 
 			log.Warn("未知错误 ", zap.String("err msg", e.Error()))

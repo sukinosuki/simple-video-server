@@ -1,0 +1,26 @@
+# @name login
+POST {{host}}/api/v1/user/login
+Content-Type: application/json
+
+{
+  "email": "miiro@qq.com",
+  "password": "233233"
+}
+
+> {%
+    client.log(response.body.data.token);
+
+    client.global.set("auth_token", response.body.data.token);
+%}
+
+###
+
+# @name follow
+
+POST {{host}}/api/v1/follow
+Authorization: {{auth_token}}
+Content-Type: application/json
+
+{
+  "uid": 5
+}

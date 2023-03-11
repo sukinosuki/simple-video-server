@@ -38,6 +38,7 @@ func init() {
 		&models.Video{},
 		&models.UserVideoCollection{},
 		&models.UserVideoLike{},
+		&models.Follow{},
 
 		&test_student.Student{},
 		&test_student.Information{},

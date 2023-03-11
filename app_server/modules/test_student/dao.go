@@ -85,7 +85,7 @@ func (d *dao) GetStudentBooks(studentId uint) ([]BookSimple, error) {
 }
 
 func (d *dao) RemoveBook(id uint) error {
-	//global.MysqlDB.Model(&Book{}).Where("id = ?", id).Delete()
+	//global.MysqlDB.Model(&Book{}).Where("id = ?", id).Unfollow()
 	err := global.MysqlDB.Model(&Book{}).Where("id = ?", id).Delete(&Book{}, id).Error
 
 	return err
@@ -152,7 +152,7 @@ func (d *dao) BindStudentAndLanguage(studentId uint, languageIds []uint) error {
 		// UPDATE `student` SET `name`='hanami' WHERE `id` = 1
 		//err = global.MysqlDB.Updates(&student).Error
 
-		//err = global.MysqlDB.Model(&Student{}).Where("student_id = ? ", studentId).Unscoped().Delete(&StudentLanguage{}).Error
+		//err = global.MysqlDB.Model(&Student{}).Where("student_id = ? ", studentId).Unscoped().Unfollow(&StudentLanguage{}).Error
 		//if err != nil {
 		//	return err
 		//}
@@ -163,7 +163,7 @@ func (d *dao) BindStudentAndLanguage(studentId uint, languageIds []uint) error {
 		//err = global.MysqlDB.Model(&student).Association("Language").Replace(languageList)
 		//err = global.MysqlDB.Model(&student).Omit("Language").Association("Language").Replace(languageList)
 		err = global.MysqlDB.Model(&student).Association("Language").Replace(languageList)
-		//global.MysqlDB.Model(&student).Where("id = ? ", studentId).Unscoped().Delete(&)
+		//global.MysqlDB.Model(&student).Where("id = ? ", studentId).Unscoped().Unfollow(&)
 		return err
 	})
 
