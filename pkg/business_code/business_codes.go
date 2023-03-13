@@ -25,7 +25,8 @@ var (
 	UploadError           = add(10050)
 	TagNameExist          = add(10060)
 
-	EmptyUploadFile = add(40010)
+	RegisterEmailExists = add(10100)
+	EmptyUploadFile     = add(40010)
 )
 
 var ECodeMap = map[int]string{
@@ -44,7 +45,8 @@ var ECodeMap = map[int]string{
 	TokenNotValidYet.Code(): "Token 无效",
 	ClaimsCoverErr.Code():   "Token 转换失败",
 
-	UploadError.Code():     "上传失败",
-	TagNameExist.Code():    "tag已存在",
-	EmptyUploadFile.Code(): "上传文件为空",
+	UploadError.Code():         "上传失败",
+	TagNameExist.Code():        "tag已存在",
+	EmptyUploadFile.Code():     "上传文件为空",
+	RegisterEmailExists.Code(): "邮箱已存在",
 }

@@ -1,10 +1,15 @@
 package middleware
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"simple-video-server/models"
 	"simple-video-server/pkg/app_ctx"
 	"simple-video-server/pkg/app_jwt"
+	"simple-video-server/pkg/global"
 	"simple-video-server/pkg/log"
 )
 
@@ -22,7 +27,21 @@ var PreAuthorizeHandler = func(c *gin.Context) {
 		if err != nil {
 			app_ctx.SetAuthorizeErr(c, err)
 		} else {
+			//TODO: 从缓存获取用户信息
 			app_ctx.SetUid(c, claims.UID)
+			key := fmt.Sprintf("user:%d:info", claims.UID)
+			result, err := global.RDB.Get(context.Background(), key).Result()
+
+			if err != nil {
+				var user models.User
+				err := json.Unmarshal([]byte(result), &user)
+				if err == nil {
+					app_ctx.SetAuth(c, &user)
+				} else {
+					//	TODO:
+				}
+			}
+
 			fields = append(fields, zap.Uint("uid", claims.UID))
 		}
 	}

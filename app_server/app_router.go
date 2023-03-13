@@ -3,6 +3,7 @@ package app_server
 import (
 	"github.com/gin-gonic/gin"
 	"simple-video-server/app_server/middleware"
+	"simple-video-server/app_server/modules/email"
 	"simple-video-server/app_server/modules/follow"
 	"simple-video-server/app_server/modules/test_student"
 	"simple-video-server/app_server/modules/upload"
@@ -35,4 +36,5 @@ func SetupRoutes(r *gin.RouterGroup) {
 
 	follow.SetupRoutes(v1)
 
+	email.SetupRoutes(v1)
 }

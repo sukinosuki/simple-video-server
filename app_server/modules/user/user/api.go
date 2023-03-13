@@ -35,7 +35,11 @@ func (api *_api) RegisterHandler(c *core.Context) (*LoginRes, error) {
 		panic(err)
 	}
 
-	profile := Service.Register(c, &userRegister)
+	profile, err := Service.Register(c, &userRegister)
+
+	if err != nil {
+		panic(err)
+	}
 
 	token, err := app_jwt.AppJwt.Create(profile.User.ID)
 	if err != nil {
@@ -83,7 +87,7 @@ func (api *_api) Login(c *core.Context) (*LoginRes, error) {
 	return loginRes, err
 }
 
-// 用户信息
+// Profile 用户信息
 func (api *_api) Profile(c *core.Context) (*Profile, error) {
 	log := c.Log.With(zap.String("caller", "user_api/profile"))
 
@@ -92,4 +96,25 @@ func (api *_api) Profile(c *core.Context) (*Profile, error) {
 	profile := Service.GetProfile(c, *c.UID)
 
 	return profile, nil
+}
+
+// ResetPassword 重置密码
+// TODO: 多种重置密码的方式(邮箱验证码、短信验证码
+func (api *_api) ResetPassword(c *core.Context) (bool, error) {
+	var form UserResetPassword
+	err := c.ShouldBind(&form)
+	if err != nil {
+		panic(err)
+	}
+
+	err = api.service.ResetPassword(c, &form)
+
+	return true, err
+}
+
+func (api *_api) Logoff(c *core.Context) (bool, error) {
+
+	err := api.service.Logoff(c)
+
+	return true, err
 }

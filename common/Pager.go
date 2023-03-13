@@ -2,6 +2,8 @@ package common
 
 import "fmt"
 
+//type StringString = CodeValue[string, string]
+
 var Asc = StringString{
 	Code:  "asc",
 	Value: "asc",

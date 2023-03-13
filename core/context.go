@@ -3,6 +3,7 @@ package core
 import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"simple-video-server/models"
 	"strconv"
 )
 
@@ -12,6 +13,7 @@ import (
 type Context struct {
 	*gin.Context
 	UID        *uint // 用户id
+	Auth       *models.User
 	Authorized bool
 	TraceID    string      // trace id
 	Log        *zap.Logger // log

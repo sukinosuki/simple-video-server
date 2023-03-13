@@ -21,6 +21,11 @@ func ToHandler[T any](handler func(coreContext *Context) (T, error), moduleName 
 		// 注入是否已登录
 		coreContext.Authorized = uid != nil
 
+		auth, ok := app_ctx.GetAuth(c)
+		if ok {
+			coreContext.Auth = auth
+		}
+
 		// 注入logger
 		logger := log.GetCtx(c.Request.Context())
 		//coreContext.Log = logger.With(zap.String("module", moduleName), zap.Uint("uid", *uid))

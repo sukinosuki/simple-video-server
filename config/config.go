@@ -43,6 +43,11 @@ type ossConfig struct {
 	BucketName      string
 }
 
+type emailConfig struct {
+	AuthCode string
+	Email    string
+}
+
 type appConfig struct {
 	Env   envConfig
 	Mysql mysqlConfig
@@ -50,6 +55,7 @@ type appConfig struct {
 	Redis redisConfig
 	Oss   ossConfig
 	Log   logConfig
+	Email emailConfig
 }
 
 var (
@@ -59,6 +65,7 @@ var (
 	Redis redisConfig
 	Oss   ossConfig
 	Log   logConfig
+	Email emailConfig
 )
 
 func init() {
@@ -81,4 +88,6 @@ func init() {
 	Oss = _appConfig.Oss
 
 	Log = _appConfig.Log
+
+	Email = _appConfig.Email
 }

@@ -17,6 +17,7 @@ var Dao = &_dao{
 	model: &models.User{},
 }
 
+// IsExistsByEmail 邮箱是否已存在
 func (dao *_dao) IsExistsByEmail(email string) (bool, *models.User, error) {
 	user := &models.User{}
 	tx := dao.db.Model(dao.model)
@@ -42,6 +43,7 @@ func (dao *_dao) GetUserAllVideoCount(uid uint) (int64, error) {
 
 	return count, err
 }
+
 func (dao *_dao) GetUserAllCollectionCount(uid uint) (int64, error) {
 	tx := dao.db.Model(&models.UserVideoCollection{})
 	var count int64
@@ -50,6 +52,7 @@ func (dao *_dao) GetUserAllCollectionCount(uid uint) (int64, error) {
 	return count, err
 }
 
+// GetByEmail get by email
 func (dao *_dao) GetByEmail(email string) (*models.User, error) {
 	user := models.User{}
 	tx := dao.db.Model(dao.model)
@@ -59,6 +62,7 @@ func (dao *_dao) GetByEmail(email string) (*models.User, error) {
 	return &user, err
 }
 
+// GetByID get by id
 func (dao *_dao) GetByID(id uint) (*models.User, error) {
 	user := models.User{}
 
@@ -68,6 +72,7 @@ func (dao *_dao) GetByID(id uint) (*models.User, error) {
 	return &user, err
 }
 
+// Add 新增
 func (dao *_dao) Add(user *models.User) (uint, error) {
 	err := dao.db.Model(dao.model).Create(user).Error
 
@@ -88,9 +93,16 @@ func (dao *_dao) FindByEmailAndPassword(email string, password string) (*models.
 	return &user, err
 }
 
-func (dao *_dao) FindById(uid uint) (*models.User, error) {
-	var user models.User
-	err := dao.db.Model(&models.User{}).Where("id = ?", uid).First(&user).Error
+// Updates 更新user非0值字段
+func (dao *_dao) Updates(user *models.User) error {
+	err := dao.db.Model(dao.model).Where("id = ?", user.ID).Updates(user).Error
 
-	return &user, err
+	return err
+}
+
+func (dao *_dao) DeleteById(id uint) error {
+
+	err := dao.db.Model(dao.model).Where("id = ?", id).Limit(1).Delete(&models.User{}).Error
+
+	return err
 }
