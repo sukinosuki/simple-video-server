@@ -13,6 +13,7 @@ var Post = &MediaType{
 	Code:  2,
 	Value: "post",
 }
+
 var MediaTypeMaps = make(map[int]*MediaType)
 
 func init() {

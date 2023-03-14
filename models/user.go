@@ -13,6 +13,6 @@ type User struct {
 	Email     string     `json:"email" gorm:"uniqueIndex;not null;size:50;type:string;comment:邮箱;"`
 	Password  string     `json:"-" gorm:"not null;size:255;type:string"`
 	Enabled   bool       `json:"enabled" gorm:"not null;type:bool"`
-	Cover     string     `json:"cover" gorm:"not null;size(255)"`
+	Cover     string     `json:"cover" gorm:"not null;size255"`
 	//VideoCollections []Video `json:"video_collections" gorm:"many2many:user_collection_video;"`
 }

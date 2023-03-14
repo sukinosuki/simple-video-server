@@ -16,7 +16,7 @@ var Desc = StringString{
 
 type Order struct {
 	Field string `json:"field" form:"field"`
-	Sort  string `json:"sort"`
+	Sort  string `json:"sort" form:"sort"`
 }
 
 type Pager struct {
