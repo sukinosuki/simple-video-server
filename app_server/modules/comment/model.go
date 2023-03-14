@@ -6,18 +6,25 @@ import (
 )
 
 type CommentAdd struct {
-	Content string `json:"content" form:"content" binding:"required,max=250"`
-	//MediaID   uint   `json:"media_id" form:"media_id" binding:"required"`
-	//MediaType int    `json:"media_type" form:"media_type" binding:"required"`
-	AtUID   *uint `json:"at_uid" form:"at_uid"`
-	Root    *uint `json:"root" form:"root"`
-	ReplyID *uint `json:"reply_id" form:"reply_id"`
+	Content   string `json:"content" form:"content" binding:"required,max=250"`
+	MediaID   uint   `json:"media_id" form:"media_id" binding:"required"`
+	MediaType int    `json:"media_type" form:"media_type" binding:"required"`
+	AtUID     *uint  `json:"at_uid" form:"at_uid"`
+	Root      *uint  `json:"root" form:"root"`
+	ReplyID   *uint  `json:"reply_id" form:"reply_id"`
 }
 
 type CommentQuery struct {
 	//Page int `json:"page" form:"page"`
 	//Size int `json:"size" form:"size"`
 	common.Pager
+	MediaID   uint `json:"media_id" form:"media_id" binding:"required"`
+	MediaType int  `json:"media_type" form:"media_type" binding:"required"`
+}
+
+type CommentDelete struct {
+	MediaID   uint `json:"media_id" form:"media_id" binding:"required"`
+	MediaType int  `json:"media_type" form:"media_type" binding:"required"`
 }
 
 type CommentResSimple struct {

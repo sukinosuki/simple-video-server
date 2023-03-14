@@ -6,10 +6,12 @@ import (
 
 type _api struct {
 	service *service
+	//commentService *comment.Service
 }
 
 var Api = &_api{
 	service: Service,
+	//commentService: comment.GetService(),
 }
 
 func (api *_api) Add(c *core.Context) (bool, error) {
@@ -83,3 +85,8 @@ func (api *_api) Delete(c *core.Context) (bool, error) {
 
 	return true, err
 }
+
+//func (api *_api) GetComment(context *core.Context) (T, error) {
+//	var form comment.CommentAdd
+//	c.shouldbind
+//}

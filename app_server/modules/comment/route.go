@@ -8,19 +8,21 @@ import (
 
 func SetupRoutes(v1 *gin.RouterGroup) {
 
-	//
-	v1.GET("/:media/:media_id/comment", core.ToHandler(Api.Get, "comment"))
+	// 获取1级评论及对应的top n 2级评论
+	v1.GET("/comment", core.ToHandler(Api.GetAll, "comment"))
+
+	v1.GET("/comment/:id", core.ToHandler(Api.Get, "comment"))
 
 	auth := v1.Group("", middleware.AuthorizeHandler)
 
 	{
 		// 新增评论
-		auth.POST("/:media/:media_id/comment", core.ToHandler(Api.Add, "comment"))
+		auth.POST("/comment", core.ToHandler(Api.Add, "comment"))
 
-		auth.GET("/:media/:media_id/comment/:id")
+		//auth.GET("/comment/:id")
+		//
+		//auth.PUT("/comment/:id")
 
-		auth.PUT("/:media/:media_id/comment/:id")
-
-		auth.DELETE("/:media/:media_id/comment/:id", core.ToHandler(Api.Delete, "comment"))
+		auth.DELETE("/comment/:id", core.ToHandler(Api.Delete, "comment"))
 	}
 }

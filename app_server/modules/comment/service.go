@@ -8,31 +8,30 @@ import (
 	"simple-video-server/models"
 	"simple-video-server/pkg/business_code"
 	"simple-video-server/pkg/global"
-	"strconv"
 )
 
-type _service struct {
+type Service struct {
 	dao *_dao
 }
 
-var Service = &_service{
+var _Service = &Service{
 	dao: Dao,
 }
 
-func (s *_service) Add(c *core.Context, commentAdd *CommentAdd) (uint, error) {
+func (s *Service) Add(c *core.Context, commentAdd *CommentAdd, mediaID uint, mediaType int) (uint, error) {
 	//校验media type、media id
 	uid := *c.UID
-	mediaType := media_type.Video
-	_mediaID, err := strconv.Atoi(c.Param("media_id"))
-	if err != nil {
-		return 0, err
-	}
-	mediaID := uint(_mediaID)
+	//mediaType := media_type.Video
+	//_mediaID, err := strconv.Atoi(c.Param("media_id"))
+	//if err != nil {
+	//	return 0, err
+	//}
+	//mediaID := uint(_mediaID)
 
-	switch c.Param("media") {
-	case "video":
-		mediaType = media_type.Video
-		exists, video, err := s.dao.IsVideoExists(mediaType.Code, mediaID)
+	switch {
+	case media_type.Video.Is(mediaType):
+		//mediaType = media_type.Video
+		exists, video, err := s.dao.IsVideoExists(mediaType, mediaID)
 		if err != nil {
 			return 0, err
 		}
@@ -45,8 +44,8 @@ func (s *_service) Add(c *core.Context, commentAdd *CommentAdd) (uint, error) {
 		}
 
 	//	TODO
-	case "post":
-		mediaType = media_type.Post
+	case media_type.Post.Is(mediaType):
+		//mediaType = media_type.Post
 	//	todo
 	default:
 		panic(errors.New("不支持的media type"))
@@ -55,44 +54,45 @@ func (s *_service) Add(c *core.Context, commentAdd *CommentAdd) (uint, error) {
 	comment := &models.Comment{
 		Root:      commentAdd.Root,
 		Content:   commentAdd.Content,
-		MediaType: mediaType.Code,
+		MediaType: mediaType,
 		MediaID:   mediaID,
 		ReplyID:   commentAdd.ReplyID,
 		AtUID:     commentAdd.AtUID,
 		UID:       uid,
 	}
 
-	err = s.dao.Create(comment)
+	err := s.dao.Create(comment)
 
 	return comment.ID, err
 }
 
-func (s *_service) Delete(c *core.Context) error {
+func (s *Service) Delete(c *core.Context, mediaID uint, mediaType int) error {
 	uid := *c.UID
 	id := c.GetId()
-	mediaType := media_type.Video
-	_mediaID, err := strconv.Atoi(c.Param("media_id"))
-	if err != nil {
-		return err
-	}
-	mediaID := uint(_mediaID)
+	//mediaType := media_type.Video
+	//_mediaID, err := strconv.Atoi(c.Param("media_id"))
+	//if err != nil {
+	//	return err
+	//}
+	//mediaID := uint(_mediaID)
 
-	switch c.Param("media") {
-	case "video":
-		mediaType = media_type.Video
+	switch {
+	case media_type.Video.Is(mediaType):
+		//mediaType = media_type.Video
 	//	TODO
-	case "post":
-		mediaType = media_type.Post
+	case media_type.Post.Is(mediaType):
+
+		//mediaType = media_type.Post
 	//	todo
 	default:
 		panic(errors.New("不支持的media type"))
 	}
 
-	err = s.dao.Delete(uid, mediaType.Code, mediaID, id)
+	err := s.dao.Delete(uid, mediaType, mediaID, id)
 	return err
 }
 
-func (s *_service) Get(c *core.Context, query *CommentQuery) ([]*CommentResSimple, error) {
+func (s *Service) GetAll(c *core.Context, query *CommentQuery) ([]*CommentResSimple, error) {
 	db := global.MysqlDB
 
 	var comments []*CommentResSimple
@@ -105,13 +105,13 @@ func (s *_service) Get(c *core.Context, query *CommentQuery) ([]*CommentResSimpl
 	subQuery := db.
 		Table("comment").
 		Select("root, count(root) reply_count").
-		Where("media_id = ?", 4).
+		Where("media_id = ?", query.MediaID).
 		Group("root")
 
 	subQuery3 := db.Table("comment as c").
 		Select("c.*, COALESCE(cc.reply_count, 0) AS reply_count, 0 AS row_num").
-		Joins("RIGHT JOIN (?) cc ON c.id = cc.root", subQuery).
-		Where("c.media_id = ? AND c.root IS NULL", 4).
+		Joins("LEFT JOIN (?) cc ON c.id = cc.root", subQuery).
+		Where("c.media_id = ? AND c.root IS NULL", query.MediaID).
 		Order("reply_count DESC, id DESC"). //TODO: 按最热、最新来排序
 		Offset(query.GetSafeOffset()).
 		Limit(query.GetSafeSize())
@@ -129,10 +129,10 @@ func (s *_service) Get(c *core.Context, query *CommentQuery) ([]*CommentResSimpl
 	subQuery5 := db.Table("comment").
 		Select("comment.*, user.id user_id, user.cover user_cover, user.nickname user_nickname, 0 AS reply_count, ROW_NUMBER() OVER (PARTITION BY root ORDER BY created_at DESC) as row_num").
 		Joins("LEFT JOIN user on user.id = comment.uid").
-		Where("media_id = ? AND root IS NOT NULL", 4)
+		Where("media_id = ? AND root IS NOT NULL", query.MediaID)
 
 	err = db.Table("(?) as C0", subQuery5).
-		Where("c0.row_num <= ?", 2).
+		Where("c0.row_num <= ?", 2). // top 2
 		Find(&secondComments).Error
 
 	if err != nil {
@@ -158,4 +158,21 @@ func (s *_service) Get(c *core.Context, query *CommentQuery) ([]*CommentResSimpl
 	}
 
 	return comments, err
+}
+
+func (s *Service) Get(c *core.Context, query *CommentQuery) ([]CommentResSimple, error) {
+	id := c.GetId()
+	db := global.MysqlDB
+
+	var comment []CommentResSimple
+	err := db.Model(&models.Comment{}).
+		Select("comment.*, user.id user_id, user.nickname user_nickname, user.cover user_cover").
+		Joins("LEFT JOIN user ON user.id = comment.uid").
+		Where("root = ?", id).
+		Order("comment.created_at DESC").
+		Offset(query.GetSafeOffset()).
+		Limit(query.GetSafeSize()).
+		Find(&comment).Error
+
+	return comment, err
 }

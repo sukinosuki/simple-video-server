@@ -15,6 +15,8 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 
 	v1.GET("/video", core.ToHandler(Api.GetAll, "video"))
 
+	//v1.GET("/video/:id/comment", core.ToHandler(Api.GetComment, "video"))
+
 	// 需要登录
 	shouldAuth := v1.Group("", middleware.AuthorizeHandler)
 	// 优化toHandler

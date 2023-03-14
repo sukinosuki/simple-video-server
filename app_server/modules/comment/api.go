@@ -3,11 +3,11 @@ package comment
 import "simple-video-server/core"
 
 type _api struct {
-	service *_service
+	service *Service
 }
 
 var Api = &_api{
-	service: Service,
+	service: _Service,
 }
 
 func (api *_api) Add(c *core.Context) (uint, error) {
@@ -18,18 +18,37 @@ func (api *_api) Add(c *core.Context) (uint, error) {
 		panic(err)
 	}
 
-	id, err := api.service.Add(c, &commentAdd)
+	id, err := api.service.Add(c, &commentAdd, commentAdd.MediaID, commentAdd.MediaType)
 
 	return id, err
 }
 
 func (api *_api) Delete(c *core.Context) (bool, error) {
-	err := api.service.Delete(c)
+	var form CommentDelete
+	err := c.ShouldBind(&form)
+	if err != nil {
+		panic(err)
+	}
+
+	err = api.service.Delete(c, form.MediaID, form.MediaType)
 
 	return true, err
 }
 
-func (api *_api) Get(c *core.Context) ([]*CommentResSimple, error) {
+func (api *_api) GetAll(c *core.Context) ([]*CommentResSimple, error) {
+	var query CommentQuery
+	err := c.ShouldBind(&query)
+	if err != nil {
+		panic(err)
+	}
+
+	comments, err := api.service.GetAll(c, &query)
+
+	return comments, err
+}
+
+func (api *_api) Get(c *core.Context) ([]CommentResSimple, error) {
+
 	var query CommentQuery
 	err := c.ShouldBind(&query)
 	if err != nil {
