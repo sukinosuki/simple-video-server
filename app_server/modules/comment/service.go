@@ -92,71 +92,13 @@ func (s *_service) Delete(c *core.Context) error {
 	return err
 }
 
-func (s *_service) Get(c *core.Context, query *CommentQuery) ([]CommentResSimple, error) {
+func (s *_service) Get(c *core.Context, query *CommentQuery) ([]*CommentResSimple, error) {
 	db := global.MysqlDB
-	//var comment []CommentResSimple
-	//commentReplySummaryTable := db.Table("(?) as comment_reply_summary",
-	//	//db.Model(&models.Comment{}).
-	//	db.Select("root, count(root) reply_count").
-	//		Where("comment.media_id = ? AND comment.root IS NOT NULL GROUP BY comment.root", 4),
-	//)
-	//err := db.Model(&models.Comment{}).
-	//	Select("comment.id, comment.root, comment.at_uid, comment.content, comment.media_id, comment.media_type, comment.uid, comment.created_at, comment.like, comment.dislike, comment_reply_summary.reply_count").
-	//	Joins("left join (?) on comment.id = comment_reply_summary.root", commentReplySummaryTable).
-	//	Find(&comment).Error
 
-	var comments []CommentResSimple
+	var comments []*CommentResSimple
 
-	//err := db.
-	//	Table("comment").
-	//	Select("comment.*, comment_reply_summary_table.reply_count").
-	//	Joins("INNER JOIN (?) AS comment_reply_summary_table ON comment.id = comment_reply_summary_table.root",
-	//		db.Table("comment").
-	//			Select("root, count(root) AS reply_count").
-	//			Where("media_id = ? AND root IS NOT NULL", 4).
-	//			//Group("root").SubQuery()).
-	//			Group("root")).
-	//	Find(&comments).Error
-
-	//2
-	//subQuery1 := db.Table("comment").
-	//	Select("*, 0 AS reply_count, ROW_NUMBER() OVER (PARTITION BY root ORDER BY created_at DESC) as row_num").
-	//	Where("media_id = ? AND root IS NOT NULL", 4)
-	//
-	//subQuery2 := db.Table("comment").
-	//	Select("id").
-	//	Where("media_id = ?", 4)
-	//
-	//subQuery3 := db.Table("comment").
-	//	Select("root, count(root) reply_count").
-	//	Joins("LEFT JOIN (?) p ON p.id = comment.media_id", subQuery2).
-	//	Where("media_id = ? AND root IS NOT NULL", 4).
-	//	Group("root")
-	//
-	//err := db.Raw("(?) UNION ALL (?)",
-	//	db.Table("(?) as c0", subQuery1).Where("c0.row_num <= ?", 2),
-	//	db.Table("`comment` as c").
-	//		Select("c.*, COALESCE(cc.reply_count, 0) AS reply_count, ? AS row_num", subQuery3).
-	//		Joins("LEFT JOIN (?) cc ON c.id = cc.root", subQuery3).
-	//		Where("c.media_id = ? AND c.root IS NULL", subQuery3).
-	//		Order("reply_count DESC, id DESC").
-	//		Limit(10)).
-	//	Find(&comments).Error
-
-	//3
-	//3.1 所有一级评论top n的二级评论
-	//SELECT c0.* FROM (
-	//	SELECT *, 0 AS reply_count, ROW_NUMBER() OVER (PARTITION BY root ORDER BY created_at DESC) as row_num
-	//FROM `comment`
-	//WHERE media_id = 4
-	//AND root IS NOT NULL
-	//) AS c0
-	//WHERE c0.row_num <= 2
-	subQuery1 := db.Table("comment").
-		Select("*, 0 AS reply_count, ROW_NUMBER() OVER (PARTITION BY root ORDER BY created_at DESC) as row_num").
-		Where("media_id = ? AND root IS NOT NULL", 4)
-
-	subQuery2 := db.Table("(?) as C0", subQuery1).Where("c0.row_num <= ?", 2)
+	//所有的top n二级评论
+	var secondComments []*CommentResSimple
 
 	// 3.2 获取每个一级评论的所有回复数
 	// SELECT c.root, count(c.root) reply_count FROM `comment` AS c WHERE c.media_id = 4 GROUP BY c.root
@@ -167,43 +109,53 @@ func (s *_service) Get(c *core.Context, query *CommentQuery) ([]CommentResSimple
 		Group("root")
 
 	subQuery3 := db.Table("comment as c").
-		Select("c.*, COALESCE(cc.reply_count, 0) AS reply_count, 0 AS row_num, user.id user_id, user.nickname user_nickname, user.cover user_cover").
+		Select("c.*, COALESCE(cc.reply_count, 0) AS reply_count, 0 AS row_num").
 		Joins("RIGHT JOIN (?) cc ON c.id = cc.root", subQuery).
-		Joins("LEFT JOIN user on user.id = c.uid").
 		Where("c.media_id = ? AND c.root IS NULL", 4).
 		Order("reply_count DESC, id DESC"). //TODO: 按最热、最新来排序
 		Offset(query.GetSafeOffset()).
 		Limit(query.GetSafeSize())
-	//Find(&comments).Error
 
-	err := db.Raw("(?) UNION ALL (?)", subQuery2, subQuery3).Find(&comments).Error
+	subQuery4 := db.
+		Table("(?) as c1", subQuery3).
+		Select("c1.*, user.id user_id, user.nickname user_nickname, user.cover user_cover").
+		Joins("LEFT JOIN user on user.id = c1.uid")
+
+	err := subQuery4.Find(&comments).Error
+	if err != nil {
+		panic(err)
+	}
+
+	subQuery5 := db.Table("comment").
+		Select("comment.*, user.id user_id, user.cover user_cover, user.nickname user_nickname, 0 AS reply_count, ROW_NUMBER() OVER (PARTITION BY root ORDER BY created_at DESC) as row_num").
+		Joins("LEFT JOIN user on user.id = comment.uid").
+		Where("media_id = ? AND root IS NOT NULL", 4)
+
+	err = db.Table("(?) as C0", subQuery5).
+		Where("c0.row_num <= ?", 2).
+		Find(&secondComments).Error
 
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-	var replyMap = make(map[uint][]CommentResSimple)
-	var commentList []CommentResSimple
-	for _, v := range comments {
-		// 一级评论
-		if v.Root == nil {
-			commentList = append(commentList, v)
+
+	var replyMap = make(map[uint][]*CommentResSimple)
+
+	for _, v := range secondComments {
+		arr, ok := replyMap[*v.Root]
+		if ok {
+			replyMap[*v.Root] = append(arr, v)
 		} else {
-			arr, ok := replyMap[*v.Root]
-			//replyMap[*v.Root] = append(arr, &v)
-			if ok {
-				replyMap[*v.Root] = append(arr, v)
-			} else {
-				replyMap[*v.Root] = []CommentResSimple{v}
-			}
+			replyMap[*v.Root] = []*CommentResSimple{v}
 		}
 	}
-	for _, v := range commentList {
+
+	for _, v := range comments {
 		arr, ok := replyMap[v.ID]
 		if ok {
-
 			v.Replies = arr
 		}
 	}
-	//return comments, err
-	return commentList, err
+
+	return comments, err
 }

@@ -29,7 +29,7 @@ func (api *_api) Delete(c *core.Context) (bool, error) {
 	return true, err
 }
 
-func (api *_api) Get(c *core.Context) ([]CommentResSimple, error) {
+func (api *_api) Get(c *core.Context) ([]*CommentResSimple, error) {
 	var query CommentQuery
 	err := c.ShouldBind(&query)
 	if err != nil {

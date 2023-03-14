@@ -11,10 +11,10 @@ type Comment struct {
 	// 评论内容(TODO: 图文评论
 	Content string `json:"content" gorm:"size:255;not null;"`
 	// 可以是video、post的id
-	MediaID uint `json:"media" gorm:"index;not null"`
+	MediaID uint `json:"media" gorm:"index:idx_media;not null"`
 	// 根据media_type判断是评论的video、文章等
 	// media_type + media_id 为唯一
-	MediaType int `json:"type" gorm:"not null"`
+	MediaType int `json:"type" gorm:"not null;idx:index_media"`
 	// 评论人id
 	UID uint `json:"uid" gorm:"index;not null"`
 	// 回复的评论id(对哪个一级评论进行回复
