@@ -1,23 +1,30 @@
 package follow
 
-import "simple-video-server/core"
+import (
+	"simple-video-server/core"
+)
 
-type _api struct {
+type followApi struct {
 	service *_service
 }
 
-var Api = &_api{
+var FollowApi = &followApi{
 	service: Service,
 }
 
-func (api *_api) Follow(c *core.Context) (bool, error) {
-	var followAdd *FollowAdd
-	err := c.ShouldBind(&followAdd)
-	if err != nil {
-		panic(err)
-	}
+func (api *followApi) Follow(c *core.Context) (bool, error) {
+	//var followAdd *FollowAdd
+	//err := c.ShouldBind(&followAdd)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	err = api.service.Follow(c, followAdd.UID)
+	//targetUID, err := strconv.Atoi(c.Param("target_uid"))
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	err := api.service.Follow(c, c.GetParamId())
 	if err != nil {
 		panic(err)
 	}
@@ -25,14 +32,17 @@ func (api *_api) Follow(c *core.Context) (bool, error) {
 	return true, err
 }
 
-func (api *_api) Unfollow(c *core.Context) (bool, error) {
-	var followAdd *FollowAdd
-	err := c.ShouldBind(&followAdd)
-	if err != nil {
-		panic(err)
-	}
-
-	err = api.service.Unfollow(c, followAdd.UID)
+func (api *followApi) Unfollow(c *core.Context) (bool, error) {
+	//var followAdd *FollowAdd
+	//err := c.ShouldBind(&followAdd)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//targetUID, err := strconv.Atoi(c.Param("target_uid"))
+	//if err != nil {
+	//	panic(err)
+	//}
+	err := api.service.Unfollow(c, c.GetParamId())
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +51,7 @@ func (api *_api) Unfollow(c *core.Context) (bool, error) {
 }
 
 // FollowScores 获取follow排名
-func (api *_api) FollowScores(c *core.Context) ([]*UserFollowerRankResSimple, error) {
+func (api *followApi) FollowScores(c *core.Context) ([]*UserFollowerRankResSimple, error) {
 	var query UserFollowRankQuery
 	err := c.ShouldBind(&query)
 	if err != nil {
@@ -60,7 +70,7 @@ func (api *_api) FollowScores(c *core.Context) ([]*UserFollowerRankResSimple, er
 	return users, err
 }
 
-func (api *_api) GetUserFollowers(c *core.Context) ([]*UserFollowerResSimple, error) {
+func (api *followApi) GetUserFollowers(c *core.Context) ([]*UserFollowerResSimple, error) {
 
 	var query UserFollowerQuery
 	err := c.ShouldBind(&query)
@@ -68,7 +78,7 @@ func (api *_api) GetUserFollowers(c *core.Context) ([]*UserFollowerResSimple, er
 		panic(err)
 	}
 
-	targetUid := c.GetId()
+	targetUid := c.GetParamUID()
 	followers, err := api.service.GetUserFollower(c, targetUid, &query)
 
 	if err != nil {
@@ -78,14 +88,14 @@ func (api *_api) GetUserFollowers(c *core.Context) ([]*UserFollowerResSimple, er
 	return followers, err
 }
 
-func (api *_api) GetUserFollowing(c *core.Context) ([]*UserFollowerResSimple, error) {
+func (api *followApi) GetUserFollowing(c *core.Context) ([]*UserFollowerResSimple, error) {
 	var query UserFollowerQuery
 	err := c.ShouldBind(&query)
 	if err != nil {
 		panic(err)
 	}
 
-	targetUid := c.GetId()
+	targetUid := c.GetParamUID()
 
 	following, err := api.service.GetUserFollowing(c, targetUid, &query)
 

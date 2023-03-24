@@ -15,7 +15,7 @@ var service = &_service{
 
 func (s *_service) GetAll(c *core.Context, query *VideoQuery) ([]models.Video, error) {
 
-	videos, err := s.dao.GetAll(*c.UID, query)
+	videos, err := s.dao.GetAll(*c.AuthUID, query)
 
 	return videos, err
 }

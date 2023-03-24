@@ -59,3 +59,11 @@ func (d *_dao) IsVideoExists(mediaType int, mediaId uint) (bool, *models.Video, 
 
 	return true, &video, err
 }
+
+func (d *_dao) GetUserById(uid uint) (*models.User, error) {
+	var user models.User
+	tx := d.db.Model(&models.User{})
+	err := tx.First(&user, uid).Error
+
+	return &user, err
+}

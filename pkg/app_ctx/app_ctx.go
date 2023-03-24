@@ -22,13 +22,13 @@ func SetTraceId(c *gin.Context, traceId string) {
 	set[string](c, TraceIdKey, traceId)
 }
 
-func GetTraceId(c *gin.Context) (string, bool) {
+func GetTraceId(c *gin.Context) (*string, bool) {
 	value, ok := get[string](c, TraceIdKey)
 	if ok {
-		return *value, ok
+		return value, ok
 	}
 
-	return "", false
+	return nil, false
 }
 
 func GetUid(c *gin.Context) (*uint, bool) {
@@ -44,10 +44,10 @@ func GetAuth(c *gin.Context) (*models.User, bool) {
 	uid, ok := GetUid(c)
 	if ok {
 
-		key := fmt.Sprintf("user:%d:info", uid)
-		user, ok := get[models.User](c, key)
+		key := fmt.Sprintf("user:%d:info", *uid)
+		user, ok := get[*models.User](c, key)
 
-		return user, ok
+		return *user, ok
 	}
 
 	return nil, false

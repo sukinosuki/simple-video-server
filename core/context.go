@@ -12,17 +12,25 @@ import (
 // https://www.jianshu.com/p/4ccdcb169345
 type Context struct {
 	*gin.Context
-	UID        *uint // 用户id
-	Auth       *models.User
-	Authorized bool
-	TraceID    string      // trace id
-	Log        *zap.Logger // log
+	AuthUID    *uint        // 认证用户id
+	Auth       *models.User //认证用户
+	Authorized bool         //是否已认证
+	TraceID    string       // trace id
+	Log        *zap.Logger  // log
 }
 
-// GetId 获取path上的id(只能是): /api/v1/user/:id
-func (ctx *Context) GetId() uint {
+// GetParamId 获取path上的id(只能是): /api/v1/video/:id
+func (ctx *Context) GetParamId() uint {
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
+
+	return uint(id)
+}
+
+// GetParamUID 获取path上的uid(只能是): /api/v1/user/:uid
+func (ctx *Context) GetParamUID() uint {
+
+	id, _ := strconv.Atoi(ctx.Param("uid"))
 
 	return uint(id)
 }

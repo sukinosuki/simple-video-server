@@ -38,11 +38,13 @@ func getFollowerKey(uid uint) string {
 	return key
 }
 
+// TODO:抽离cache层
+
 // Follow 添加一个关注
 func (s *_service) Follow(c *core.Context, targetUid uint) error {
 
 	// TODO: 是否已关注
-	followingKey := getFollowingKey(*c.UID)
+	followingKey := getFollowingKey(*c.AuthUID)
 	followerKey := getFollowerKey(targetUid)
 
 	exists, err := s.cache.SIsMember(context.Background(), followingKey, targetUid).Result()
@@ -64,7 +66,7 @@ func (s *_service) Follow(c *core.Context, targetUid uint) error {
 	}
 
 	// targetUid的粉丝set加上uid
-	_, err = s.cache.SAdd(context.Background(), followerKey, *c.UID).Result()
+	_, err = s.cache.SAdd(context.Background(), followerKey, *c.AuthUID).Result()
 	if err != nil {
 		return err
 	}
@@ -81,11 +83,11 @@ func (s *_service) Follow(c *core.Context, targetUid uint) error {
 
 // Unfollow 取消一个关注
 func (s *_service) Unfollow(c *core.Context, targetUid uint) error {
-	followingKey := getFollowingKey(*c.UID)
+	followingKey := getFollowingKey(*c.AuthUID)
 	followerKey := getFollowerKey(targetUid)
 
 	// 用户是否已经关注目标用户
-	exists, err := s.cache.SIsMember(context.Background(), followerKey, *c.UID).Result()
+	exists, err := s.cache.SIsMember(context.Background(), followerKey, *c.AuthUID).Result()
 
 	if err != nil {
 		return err
@@ -105,7 +107,7 @@ func (s *_service) Unfollow(c *core.Context, targetUid uint) error {
 	fmt.Println("result ", result)
 
 	//目标用户的关注列表删除用户
-	result, err = s.cache.SRem(context.Background(), followerKey, *c.UID).Result()
+	result, err = s.cache.SRem(context.Background(), followerKey, *c.AuthUID).Result()
 	if err != nil {
 		return err
 	}
@@ -197,7 +199,7 @@ func (s *_service) FollowScores(c *core.Context, query *UserFollowRankQuery) (us
 func (s *_service) GetUserFollower(c *core.Context, userId uint, query *UserFollowerQuery) ([]*UserFollowerResSimple, error) {
 
 	targetUserFollowerKey := getFollowerKey(userId)
-	selfFollowerKey := getFollowerKey(*c.UID)
+	selfFollowerKey := getFollowerKey(*c.AuthUID)
 
 	var ids []string
 	var err error
@@ -221,7 +223,7 @@ func (s *_service) GetUserFollower(c *core.Context, userId uint, query *UserFoll
 // GetUserFollowing 获取某个用户的关注列表
 func (s *_service) GetUserFollowing(c *core.Context, userId uint, query *UserFollowerQuery) ([]*UserFollowerResSimple, error) {
 	targetUserFollowingKey := getFollowingKey(userId)
-	selfFollowingKey := getFollowingKey(*c.UID)
+	selfFollowingKey := getFollowingKey(*c.AuthUID)
 
 	var ids []string
 	var err error
@@ -241,3 +243,9 @@ func (s *_service) GetUserFollowing(c *core.Context, userId uint, query *UserFol
 
 	return users, err
 }
+
+// IsFollower 自己是否是关注了某个用户
+//func (s *_service) IsFollowingOneUser(c *core.Context, targetUID uint) {
+//	//exists, err := s.cache.SIsMember(context.Background(), followingKey, targetUid).Result()
+//
+//}

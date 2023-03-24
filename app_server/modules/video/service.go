@@ -39,8 +39,8 @@ func (s *service) Add2(uid uint, add VideoAdd, url string, cover string) error {
 	//return db.MysqlDB.Model(&Video{}).follow(video).Error
 }
 
-func (s *service) GetAll(c *core.Context, query *VideoQuery) ([]VideoSimple, error) {
-	all, err := s.dao.GetAll(query)
+func (s *service) GetAll(c *core.Context, uid *uint, query *VideoQuery) ([]VideoSimple, error) {
+	all, err := s.dao.GetAll(uid, query)
 
 	return all, err
 }
@@ -71,14 +71,15 @@ func (s *service) Get(c *core.Context, vid uint) (*VideoRes, error) {
 	}
 	// 已登录
 	if c.Authorized {
-		likeType, err := cache.Like.GetLikeTypeByUserAndVideo(*c.UID, vid)
-		if err != nil {
-			return nil, err
-		}
+		//TODO: 捕获错误
+		likeType, _ := cache.Like.GetLikeTypeByUserAndVideo(*c.AuthUID, vid)
+		//if err != nil {
+		//	return nil, err
+		//}
 		isLike = like_type.Like.Is(likeType)
 		isDislike = like_type.Dislike.Is(likeType)
 		//isCollect, _ = s.dao.IsCollect(*c.UID, vid)
-		isCollect, _ = s.dao.IsCollect(*c.UID, vid)
+		isCollect, _ = s.dao.IsCollect(*c.AuthUID, vid)
 	}
 
 	videoRes := &VideoRes{
@@ -119,7 +120,7 @@ func (s *service) Add(uid uint, add *VideoAdd) (*models.Video, error) {
 func (s *service) Update(c *core.Context, vid uint, videoUpdate *VideoUpdate) error {
 	//vid := c.GetId()
 
-	err := s.dao.Update(*c.UID, vid, videoUpdate)
+	err := s.dao.Update(*c.AuthUID, vid, videoUpdate)
 
 	if err != nil {
 		panic(err)
@@ -130,7 +131,7 @@ func (s *service) Update(c *core.Context, vid uint, videoUpdate *VideoUpdate) er
 
 // Delete delete video
 func (s *service) Delete(c *core.Context, vid uint) error {
-	err := s.dao.Delete(*c.UID, vid)
+	err := s.dao.Delete(*c.AuthUID, vid)
 
 	return err
 }

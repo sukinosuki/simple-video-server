@@ -48,5 +48,5 @@ type CommentResSimple struct {
 type CommentResSimpleUser struct {
 	ID       uint   `json:"id"`
 	Nickname string `json:"nickname"`
-	Cover    string `json:"cover"`
+	Avatar   string `json:"avatar"`
 }

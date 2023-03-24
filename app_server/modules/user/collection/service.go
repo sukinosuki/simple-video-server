@@ -25,7 +25,7 @@ func GetCollectionService() *Service {
 }
 
 func (s *Service) Add(c *core.Context, vid uint) error {
-	uid := *c.UID
+	uid := *c.AuthUID
 	// TODO: 视频是否存在
 	exists, video, err := s.dao.IsVideoExists(vid)
 	if err != nil {
@@ -61,15 +61,14 @@ func (s *Service) Add(c *core.Context, vid uint) error {
 }
 
 func (s *Service) Delete(c *core.Context, vid uint) error {
-	err := s.dao.Delete(*c.UID, vid)
+	err := s.dao.Delete(*c.AuthUID, vid)
 
 	return err
 }
 
-// GetAll TODO:分页
-func (s *Service) GetAll(c *core.Context, query *CollectionQuery) ([]*UserVideoCollectionRes, error) {
+func (s *Service) GetAll(c *core.Context, uid uint, query *CollectionQuery) ([]*UserVideoCollectionRes, error) {
 
-	collections, err := s.dao.GetAll(*c.UID, query)
+	collections, err := s.dao.GetAll(uid, query)
 	if err != nil {
 		return nil, err
 	}

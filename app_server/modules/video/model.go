@@ -18,8 +18,9 @@ type VideoUpdate struct {
 
 type VideoQuery struct {
 	common.Pager
-	Lock *bool `json:"lock" form:"lock"`
-	UID  *uint `json:"uid" form:"uid"`
+	//UID     *uint  `json:"uid" form:"uid"`
+	Exclude []uint `json:"exclude" form:"exclude"`
+	random  bool
 }
 
 type VideoSimple struct {
@@ -35,6 +36,7 @@ type VideoSimple struct {
 type VideoSimpleUser struct {
 	ID       uint   `json:"id"`
 	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
 }
 
 type VideoResVideo struct {
@@ -50,6 +52,7 @@ type VideoResVideo struct {
 type VideoResVideoUser struct {
 	ID       uint   `json:"id"`
 	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
 }
 
 type VideoRes struct {

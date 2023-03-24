@@ -31,7 +31,7 @@ func (api *_api) Add(c *core.Context) (bool, error) {
 
 func (api *_api) Delete(c *core.Context) (bool, error) {
 
-	id := c.GetId()
+	id := c.GetParamId()
 
 	err := api.service.Delete(c, id)
 	if err != nil {
@@ -48,7 +48,9 @@ func (api *_api) GetAll(c *core.Context) ([]*UserVideoCollectionRes, error) {
 		panic(err)
 	}
 
-	collections, err := api.service.GetAll(c, &query)
+	uid := c.GetParamUID()
+
+	collections, err := api.service.GetAll(c, uid, &query)
 
 	if err != nil {
 		panic(err)

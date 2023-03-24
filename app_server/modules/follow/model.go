@@ -12,13 +12,13 @@ type UserFollowerRankResSimple struct {
 	ID       uint    `json:"id"`
 	Nickname string  `json:"nickname"`
 	Score    float64 `json:"score" gorm:"-"`
-	Cover    string  `json:"cover"`
+	Avatar   string  `json:"avatar"`
 }
 
 type UserFollowerResSimple struct {
 	ID       uint   `json:"id"`
 	Nickname string `json:"nickname"`
-	Cover    string `json:"cover"`
+	Avatar   string `json:"avatar"`
 }
 
 type UserFollowerQuery struct {

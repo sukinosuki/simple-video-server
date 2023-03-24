@@ -19,7 +19,7 @@ type Service struct {
 var service = &Service{}
 
 func (s *Service) Upload(c *core.Context, data *UploadData) (string, error) {
-	uid := *c.UID
+	uid := *c.AuthUID
 	file, header, err := c.Request.FormFile("file")
 	// TODO: 校验文件大小、格式、是否存在
 	if err != nil {
@@ -31,6 +31,7 @@ func (s *Service) Upload(c *core.Context, data *UploadData) (string, error) {
 		//TODO:
 		panic(errors.New("type不正确"))
 	}
+
 	uploadClass := upload_class.GetByCode(data.Class)
 	if uploadClass == nil {
 		// TODO:

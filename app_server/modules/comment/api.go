@@ -1,6 +1,8 @@
 package comment
 
-import "simple-video-server/core"
+import (
+	"simple-video-server/core"
+)
 
 type _api struct {
 	service *Service
@@ -10,7 +12,7 @@ var Api = &_api{
 	service: _Service,
 }
 
-func (api *_api) Add(c *core.Context) (uint, error) {
+func (api *_api) Add(c *core.Context) (*CommentResSimple, error) {
 
 	var commentAdd CommentAdd
 	err := c.ShouldBind(&commentAdd)
@@ -18,9 +20,9 @@ func (api *_api) Add(c *core.Context) (uint, error) {
 		panic(err)
 	}
 
-	id, err := api.service.Add(c, &commentAdd, commentAdd.MediaID, commentAdd.MediaType)
+	comment, err := api.service.Add(c, &commentAdd, commentAdd.MediaID, commentAdd.MediaType)
 
-	return id, err
+	return comment, err
 }
 
 func (api *_api) Delete(c *core.Context) (bool, error) {

@@ -42,7 +42,7 @@ func GetLikeService() *Service {
 // video总点赞数
 // TODO: 是否需要记录某个video被哪些用户点赞(踩)过
 func (s *Service) Add(c *core.Context, like *VideoLike) error {
-	uid := *c.UID
+	uid := *c.AuthUID
 	vid := like.VID
 
 	existLikeType, _ := s.cache.GetLikeTypeByUserAndVideo(uid, vid)
@@ -98,7 +98,7 @@ func (s *Service) Add(c *core.Context, like *VideoLike) error {
 // Delete 删除点赞、点踩
 func (s *Service) Delete(c *core.Context, like *VideoLike) error {
 
-	uid := *c.UID
+	uid := *c.AuthUID
 	vid := like.VID
 	existLikeType, _ := s.cache.GetLikeTypeByUserAndVideo(uid, vid)
 

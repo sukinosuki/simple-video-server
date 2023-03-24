@@ -17,7 +17,7 @@ func ToHandler[T any](handler func(coreContext *Context) (T, error), moduleName 
 
 		// 注入uid
 		uid, _ := app_ctx.GetUid(c)
-		coreContext.UID = uid
+		coreContext.AuthUID = uid
 		// 注入是否已登录
 		coreContext.Authorized = uid != nil
 
@@ -33,7 +33,9 @@ func ToHandler[T any](handler func(coreContext *Context) (T, error), moduleName 
 
 		// 注入trace id
 		traceId, _ := app_ctx.GetTraceId(c)
-		coreContext.TraceID = traceId
+		if traceId != nil {
+			coreContext.TraceID = *traceId
+		}
 
 		// 执行handler, 得到返回的响应体和err
 		resData, err := handler(coreContext)

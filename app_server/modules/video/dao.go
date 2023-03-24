@@ -53,7 +53,8 @@ func (d *_dao) GetById(id uint) (*VideoResVideo, error) {
 			"video.url",
 			"video.uid",
 			"user.id user_id",
-			"user.nickname user_nickname").
+			"user.nickname user_nickname",
+			"user.avatar user_avatar").
 		Joins("left join user on user.id = video.uid").
 		Where("video.id = ? ", id).
 		First(&video).
@@ -119,7 +120,7 @@ func (d *_dao) GetVideoCollectionCountById(vid uint) (int64, error) {
 }
 
 // GetAll 返回视频列表
-func (d *_dao) GetAll(query *VideoQuery) ([]VideoSimple, error) {
+func (d *_dao) GetAll(uid *uint, query *VideoQuery) ([]VideoSimple, error) {
 	var videos []VideoSimple
 
 	tx := d.db.Model(d.model)
@@ -131,21 +132,23 @@ func (d *_dao) GetAll(query *VideoQuery) ([]VideoSimple, error) {
 		"video.url",
 		"video.created_at",
 		"user.id user_id",
-		"user.nickname user_nickname").
+		"user.nickname user_nickname", "user.avatar user_avatar").
 		Joins("left join user on user.id = video.uid")
 
-	if query.UID != nil {
-		tx.Where("video.uid = ?", query.UID)
+	if uid != nil {
+		tx.Where("video.uid = ?", uid)
 	}
 
-	if query.Lock != nil {
-		tx.Where("video.locked = ?", query.Lock)
+	if query.random {
+		tx.
+			Order("RAND()").
+			Limit(query.GetSafeSize())
+	} else {
+		tx.Order(query.GetOrder()).
+			Offset(query.GetSafeOffset()).
+			Limit(query.GetSafeSize())
 	}
-
 	err := tx.
-		Order(query.GetOrder()).
-		Offset(query.GetSafeOffset()).
-		Limit(query.GetSafeSize()).
 		Find(&videos).Error
 
 	return videos, err

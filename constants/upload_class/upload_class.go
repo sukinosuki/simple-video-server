@@ -16,6 +16,20 @@ var OneVideo = &UploadClass{
 	},
 }
 
+var VideoCover = &UploadClass{
+	common.CodeValue[int, string]{
+		Code:  2,
+		Value: "moment-video-cover",
+	},
+}
+
+var UserAvatar = &UploadClass{
+	common.CodeValue[int, string]{
+		Code:  3,
+		Value: "user-avatar",
+	},
+}
+
 func GetByCode(code int) *UploadClass {
 	value, ok := uploadClassMap[code]
 
@@ -28,4 +42,5 @@ func GetByCode(code int) *UploadClass {
 
 func init() {
 	uploadClassMap[OneVideo.Code] = OneVideo
+	uploadClassMap[VideoCover.Code] = VideoCover
 }

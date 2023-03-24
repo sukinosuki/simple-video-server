@@ -21,6 +21,7 @@ type UserVideoCollectionRes struct {
 type UserVideoCollectionResUser struct {
 	ID       uint   `json:"id"`
 	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
 }
 
 type CollectionQuery struct {

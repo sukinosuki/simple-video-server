@@ -13,10 +13,10 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 
 	{
 		// 新增收藏
-		shouldAuth.POST("/user/like/video", core.ToHandler(Api.Add, "collection"))
+		shouldAuth.POST("/auth/like/video", core.ToHandler(Api.Add, "collection"))
 
 		// 删除收藏
-		shouldAuth.DELETE("/user/like/video", core.ToHandler(Api.Delete, "collection"))
+		shouldAuth.DELETE("/auth/like/video", core.ToHandler(Api.Delete, "collection"))
 
 		// 获取全部收藏
 		//shouldAuth.GET("/user/like/video", common.ToHandler(Api.GetAll, "collection"))

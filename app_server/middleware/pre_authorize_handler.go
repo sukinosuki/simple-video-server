@@ -19,7 +19,10 @@ var PreAuthorizeHandler = func(c *gin.Context) {
 
 	var fields []zap.Field
 
-	fields = append(fields, zap.String("trace-id", traceId))
+	if traceId != nil {
+		fields = append(fields, zap.String("trace-id", *traceId))
+	}
+
 	if token != "" {
 
 		claims, err := app_jwt.AppJwt.Parse(token)
@@ -32,7 +35,7 @@ var PreAuthorizeHandler = func(c *gin.Context) {
 			key := fmt.Sprintf("user:%d:info", claims.UID)
 			result, err := global.RDB.Get(context.Background(), key).Result()
 
-			if err != nil {
+			if err == nil {
 				var user models.User
 				err := json.Unmarshal([]byte(result), &user)
 				if err == nil {

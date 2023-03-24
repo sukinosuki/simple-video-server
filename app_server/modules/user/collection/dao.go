@@ -43,7 +43,7 @@ func (d *_dao) GetAll(uid uint, query *CollectionQuery) ([]*UserVideoCollectionR
 	tx := d.db.Model(d.model)
 
 	err := tx.Where("user_video_collection.uid = ?", uid).
-		Select("video.id", "video.title", "video.cover", "video.created_at", "user.id user_id", "user.nickname user_nickname").
+		Select("video.id", "video.title", "video.cover", "video.created_at", "user.id user_id", "user.nickname user_nickname", "user.avatar user_avatar").
 		Joins("left join video on user_video_collection.vid = video.id").
 		Joins("left join user on user.id = video.uid").
 		Order("created_at desc").

@@ -11,7 +11,8 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 	// 获取1级评论及对应的top n 2级评论
 	v1.GET("/comment", core.ToHandler(Api.GetAll, "comment"))
 
-	v1.GET("/comment/:id", core.ToHandler(Api.Get, "comment"))
+	//获取1级评论下的所有二级评论
+	v1.GET("/comment/:id/replies", core.ToHandler(Api.Get, "comment"))
 
 	auth := v1.Group("", middleware.AuthorizeHandler)
 
