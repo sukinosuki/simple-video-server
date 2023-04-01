@@ -7,6 +7,7 @@ import (
 	"simple-video-server/app_server/modules/comment"
 	"simple-video-server/app_server/modules/email"
 	"simple-video-server/app_server/modules/follow"
+	"simple-video-server/app_server/modules/test_limit"
 	"simple-video-server/app_server/modules/upload"
 	"simple-video-server/app_server/modules/user/collection"
 	"simple-video-server/app_server/modules/user/like"
@@ -42,4 +43,6 @@ func SetupRoutes(r *gin.RouterGroup) {
 	email.SetupRoutes(v1)
 
 	comment.SetupRoutes(v1)
+
+	test_limit.SetupRoutes(v1)
 }

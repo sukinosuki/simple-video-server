@@ -19,19 +19,6 @@ func (c *userCache) GetUser(uid uint) (*models.User, error) {
 	key := c.getUserCacheKey(uid)
 
 	user, err := redis_util.Get[models.User](key)
-	//ctx := context.Background()
-	//field := "info"
-	//result, err := global.RDB.HGet(ctx, key, field).Result()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//var user models.User
-	//err = json.Unmarshal([]byte(result), &user)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//fmt.Println("user ", &user)
 
 	return user, err
 }

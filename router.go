@@ -50,9 +50,15 @@ func Run(router *gin.Engine) {
 	<-ctx.Done()
 
 	fmt.Println("关闭应用")
+
 }
 
 func SetupRouter() {
+
+	if !config.Env.Debug {
+
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	router := gin.Default()
 

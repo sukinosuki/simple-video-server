@@ -20,10 +20,12 @@ func ToHandler[T any](handler func(coreContext *Context) (T, error), moduleName 
 		coreContext.AuthUID = uid
 		// 注入是否已登录
 		coreContext.Authorized = uid != nil
-
-		auth, ok := app_ctx.GetAuth(c)
-		if ok {
-			coreContext.Auth = auth
+		if uid != nil {
+			// 注入auth
+			auth, ok := app_ctx.GetAuth(c)
+			if ok {
+				coreContext.Auth = auth
+			}
 		}
 
 		// 注入logger

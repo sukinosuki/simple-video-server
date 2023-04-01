@@ -14,7 +14,7 @@ type User struct {
 	Password  string     `json:"-" gorm:"not null;size:255;type:string"`
 	Enabled   bool       `json:"enabled" gorm:"not null;type:bool"`
 	Avatar    string     `json:"avatar" gorm:"not null;size255"`
-	BirthDay  *time.Time `json:"birth_day"`
+	Birthday  *time.Time `json:"birthday"`
 	Gender    int        `json:"gender"`
 	//VideoCollections []Video `json:"video_collections" gorm:"many2many:user_collection_video;"`
 }

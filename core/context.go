@@ -13,8 +13,8 @@ import (
 type Context struct {
 	*gin.Context
 	AuthUID    *uint        // 认证用户id
-	Auth       *models.User //认证用户
-	Authorized bool         //是否已认证
+	Auth       *models.User // 认证用户
+	Authorized bool         // 是否已认证
 	TraceID    string       // trace id
 	Log        *zap.Logger  // log
 }
