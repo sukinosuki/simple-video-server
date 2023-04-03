@@ -1,4 +1,4 @@
-package cache
+package email
 
 import (
 	"context"
@@ -7,10 +7,14 @@ import (
 	"time"
 )
 
-type EmailCache struct {
+type Cache struct {
 }
 
-var Email = &EmailCache{}
+var cache = &Cache{}
+
+func GetCache() *Cache {
+	return cache
+}
 
 func getKey(email string, actionType string) string {
 
@@ -19,7 +23,7 @@ func getKey(email string, actionType string) string {
 	return key
 }
 
-func (c *EmailCache) Set(email string, actionType string, value string) error {
+func (c *Cache) Set(email string, actionType string, value string) error {
 	//key := fmt.Sprintf("email_code:%s:%s", actionType, email)
 	key := getKey(email, actionType)
 
@@ -30,7 +34,7 @@ func (c *EmailCache) Set(email string, actionType string, value string) error {
 	return err
 }
 
-func (c *EmailCache) Get(email string, actionType string) (string, error) {
+func (c *Cache) Get(email string, actionType string) (string, error) {
 	key := getKey(email, actionType)
 
 	result, err := global.RDB.Get(context.Background(), key).Result()
@@ -38,7 +42,7 @@ func (c *EmailCache) Get(email string, actionType string) (string, error) {
 	return result, err
 }
 
-func (c *EmailCache) Delete(email string, actionType string) error {
+func (c *Cache) Delete(email string, actionType string) error {
 	key := getKey(email, actionType)
 
 	num, err := global.RDB.Del(context.Background(), key).Result()

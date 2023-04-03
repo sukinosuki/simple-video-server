@@ -14,7 +14,7 @@ import (
 )
 
 var ErrorHandler = func(c *gin.Context) {
-
+	handlerField := zap.String("handler", "error_handler")
 	defer func() {
 		log := log.GetCtx(c.Request.Context())
 
@@ -26,7 +26,7 @@ var ErrorHandler = func(c *gin.Context) {
 
 			//if errors.Is(e, &mysql.MySQLError{}) {
 			if e, ok := err.(*mysql.MySQLError); ok {
-				log.Warn("mysql错误", zap.String("msg", e.Message))
+				log.Warn("mysql错误", zap.String("msg", e.Message), handlerField)
 
 				if strings.Contains(e.Error(), "Duplicate") {
 					c.AbortWithStatusJSON(http.StatusInternalServerError, common.AppResponse[any]{
@@ -55,7 +55,7 @@ var ErrorHandler = func(c *gin.Context) {
 					msg = v
 					break
 				}
-				log.Warn("参数校验错误", zap.String("msg", msg))
+				log.Warn("参数校验错误", zap.String("msg", msg), handlerField)
 
 				c.AbortWithStatusJSON(http.StatusBadRequest, &common.AppResponse[any]{
 					Code:   business_code.RequestErr.Code(),
@@ -79,7 +79,7 @@ var ErrorHandler = func(c *gin.Context) {
 
 			// 自定义business错误
 			if e, ok := err.(business_code.BusinessCode); ok {
-				log.Warn("业务错误", zap.String("msg", e.Message()), zap.Int("code", e.Code()))
+				log.Warn("业务错误", zap.String("msg", e.Message()), zap.Int("code", e.Code()), handlerField)
 
 				// TODO:
 				c.AbortWithStatusJSON(http.StatusOK, common.AppResponse[any]{
@@ -102,7 +102,7 @@ var ErrorHandler = func(c *gin.Context) {
 
 			e := err.(error)
 
-			log.Warn("未知错误 ", zap.String("err msg", e.Error()))
+			log.Warn("未知错误 ", zap.String("err msg", e.Error()), handlerField)
 
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"code": 500,

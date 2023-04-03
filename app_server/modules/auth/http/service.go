@@ -1,4 +1,4 @@
-package internal
+package http
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 	"simple-video-server/app_server/cache"
 	"simple-video-server/app_server/modules/auth"
+	"simple-video-server/app_server/modules/email"
 	"simple-video-server/constants/email_action_type"
 	"simple-video-server/constants/gender"
 	"simple-video-server/constants/reset_password_method"
@@ -18,23 +19,23 @@ import (
 	"simple-video-server/pkg/util"
 )
 
-type Service struct {
+type _Service struct {
 	authDao    *auth.Dao
 	cache      *redis.Client
-	emailCache *cache.EmailCache
+	emailCache *email.Cache
 	db         *gorm.DB
 }
 
-var service = &Service{
+var service = &_Service{
 	authDao:    auth.GetAuthDao(),
 	cache:      db.GetRedisDB(),
-	emailCache: cache.Email,
+	emailCache: email.GetCache(),
 	db:         db.GetOrmDB(),
 }
 
-func GetService() *Service {
-	return service
-}
+//func GetService() *_Service {
+//	return service
+//}
 
 func handleDeferTxError(tx *gorm.DB, err any) {
 	if err != nil {
@@ -46,7 +47,7 @@ func handleDeferTxError(tx *gorm.DB, err any) {
 }
 
 // 验证注册的email code
-func (s *Service) verifyEmailRegisterCode(email string, code string) (bool, error) {
+func (s *_Service) verifyEmailRegisterCode(email string, code string) (bool, error) {
 	result, err := s.emailCache.Get(email, email_action_type.Register.Code)
 	if err != nil {
 		// TODO:
@@ -61,7 +62,7 @@ func (s *Service) verifyEmailRegisterCode(email string, code string) (bool, erro
 }
 
 // Register 注册
-func (s *Service) Register(c *core.Context, userRegister *auth.RegisterForm) *auth.LoginRes {
+func (s *_Service) Register(c *core.Context, userRegister *auth.RegisterForm) *auth.LoginRes {
 	tx := s.db.Begin()
 
 	defer func() {
@@ -115,7 +116,7 @@ func (s *Service) Register(c *core.Context, userRegister *auth.RegisterForm) *au
 }
 
 // Login 登录
-func (s *Service) Login(c *core.Context, userLogin *auth.LoginForm) *auth.LoginRes {
+func (s *_Service) Login(c *core.Context, userLogin *auth.LoginForm) *auth.LoginRes {
 	exists, user, err := s.authDao.IsExistsByEmail(userLogin.Email)
 
 	if err != nil {
@@ -179,7 +180,7 @@ func (s *Service) Login(c *core.Context, userLogin *auth.LoginForm) *auth.LoginR
 }
 
 // GetProfile 用户详情
-func (s *Service) GetProfile(c *core.Context, uid uint) *auth.LoginResProfile {
+func (s *_Service) GetProfile(c *core.Context, uid uint) *auth.LoginResProfile {
 	user, err := s.authDao.GetOneByID(uid)
 	videoCount, err := s.authDao.GetOneUserAllVideoCount(user.ID)
 
@@ -217,7 +218,7 @@ func (s *Service) GetProfile(c *core.Context, uid uint) *auth.LoginResProfile {
 }
 
 // ResetPassword 重置密码
-func (s *Service) ResetPassword(c *core.Context, form *auth.ResetPasswordForm) error {
+func (s *_Service) ResetPassword(c *core.Context, form *auth.ResetPasswordForm) error {
 
 	switch {
 	case reset_password_method.Email.Is(form.Method):
@@ -235,7 +236,7 @@ func (s *Service) ResetPassword(c *core.Context, form *auth.ResetPasswordForm) e
 }
 
 // ResetPasswordByEmailCode 邮箱重置密码
-func (s *Service) ResetPasswordByEmailCode(c *core.Context, form *auth.ResetPasswordForm) error {
+func (s *_Service) ResetPasswordByEmailCode(c *core.Context, form *auth.ResetPasswordForm) error {
 	// 1 校验code
 	// 2 加密password
 	// 3 更新user的password
@@ -286,7 +287,7 @@ func (s *Service) ResetPasswordByEmailCode(c *core.Context, form *auth.ResetPass
 }
 
 // UpdateProfile 更新profile
-func (s *Service) UpdateProfile(c *core.Context, form *auth.UpdateForm) error {
+func (s *_Service) UpdateProfile(c *core.Context, form *auth.UpdateForm) error {
 	tx := s.db.Begin()
 
 	defer func() {
@@ -321,7 +322,7 @@ func (s *Service) UpdateProfile(c *core.Context, form *auth.UpdateForm) error {
 }
 
 // Logoff 注销
-func (s *Service) Logoff(c *core.Context) error {
+func (s *_Service) Logoff(c *core.Context) error {
 	//	删除该用户数据、缓存
 	err := s.authDao.DeleteById(*c.AuthUID)
 	if err != nil {

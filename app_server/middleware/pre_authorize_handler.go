@@ -53,7 +53,7 @@ var PreAuthorizeHandler = func(c *gin.Context) {
 	ctx, logger := log.AddCtx(c.Request.Context(), fields...)
 	c.Request = c.Request.WithContext(ctx)
 
-	logger.Info("[PreAuthorizeHandler]")
+	logger.Info("预授权开始", zap.String("handler", "pre_authorize_handler"))
 
 	c.Next()
 }

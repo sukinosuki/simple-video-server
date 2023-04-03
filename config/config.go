@@ -1,6 +1,10 @@
 package config
 
-import "github.com/BurntSushi/toml"
+import (
+	"github.com/BurntSushi/toml"
+	"os"
+	"strings"
+)
 
 type envConfig struct {
 	Name  string
@@ -69,12 +73,26 @@ var (
 )
 
 func init() {
+
 	var _appConfig appConfig
 
 	_, err := toml.DecodeFile("config/config.toml", &_appConfig)
 
 	if err != nil {
 		panic(err)
+	}
+
+	// 处理命令参数
+	args := os.Args
+
+	for _, v := range args {
+		arr := strings.Split(v, "=")
+		switch arr[0] {
+		case "release":
+			if arr[1] == "true" {
+				_appConfig.Env.Debug = false
+			}
+		}
 	}
 
 	Env = _appConfig.Env
@@ -90,4 +108,5 @@ func init() {
 	Log = _appConfig.Log
 
 	Email = _appConfig.Email
+
 }

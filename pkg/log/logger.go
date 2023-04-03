@@ -53,7 +53,12 @@ func init() {
 
 	//core := zapcore.NewCore(getEncoder(), getWriteSyncer(), logMode)
 	//core := zapcore.NewCore(getEncoder(), zapcore.NewMultiWriteSyncer(getWriteSyncer(), zapcore.AddSync(os.Stdout)), logMode)
-	core := zapcore.NewCore(getEncoder(), zapcore.NewMultiWriteSyncer(getWriteSyncer(), zapcore.AddSync(os.Stdout)), logMode)
+	var core zapcore.Core
+	if config.Env.Debug {
+		core = zapcore.NewCore(getEncoder(), zapcore.NewMultiWriteSyncer(getWriteSyncer(), zapcore.AddSync(os.Stdout)), logMode)
+	} else {
+		core = zapcore.NewCore(getEncoder(), zapcore.NewMultiWriteSyncer(getWriteSyncer()), logMode)
+	}
 
 	//Logger = zap.New(core).Sugar()
 	Logger = zap.New(core)

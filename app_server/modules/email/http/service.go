@@ -1,4 +1,4 @@
-package internal
+package http
 
 import (
 	"errors"
@@ -6,8 +6,7 @@ import (
 	"github.com/jordan-wright/email"
 	"go.uber.org/zap"
 	"net/smtp"
-	"simple-video-server/app_server/cache"
-	emailservice "simple-video-server/app_server/modules/email"
+	emailModule "simple-video-server/app_server/modules/email"
 	"simple-video-server/config"
 	"simple-video-server/constants/email_action_type"
 	"simple-video-server/core"
@@ -15,19 +14,19 @@ import (
 	"simple-video-server/pkg/util"
 )
 
-type _service struct {
+type _Service struct {
 	//db         *gorm.DB
-	dao        *emailservice.Dao
-	emailCache *cache.EmailCache
+	dao        *emailModule.Dao
+	emailCache *emailModule.Cache
 }
 
-var Service = &_service{
+var service = &_Service{
 	//db:         db.GetOrmDB(),
-	dao:        emailservice.GetDao(),
-	emailCache: cache.Email,
+	dao:        emailModule.GetDao(),
+	emailCache: emailModule.GetCache(),
 }
 
-func (s *_service) Send(c *core.Context, data *emailservice.SendEmail) (string, error) {
+func (s *_Service) Send(c *core.Context, data *emailModule.SendEmail) (string, error) {
 
 	switch {
 	// 注册操作
@@ -65,7 +64,7 @@ func _generateEmailCode() string {
 }
 
 // 重置密码
-func (s *_service) handleResetPassword(c *core.Context, data *emailservice.SendEmail) (string, error) {
+func (s *_Service) handleResetPassword(c *core.Context, data *emailModule.SendEmail) (string, error) {
 	// 获取到邮箱
 	//uid := *c.UID
 	//var user models.User
@@ -100,7 +99,7 @@ func (s *_service) handleResetPassword(c *core.Context, data *emailservice.SendE
 }
 
 // 处理注册
-func (s *_service) handleRegister(c *core.Context, data *emailservice.SendEmail) (string, error) {
+func (s *_Service) handleRegister(c *core.Context, data *emailModule.SendEmail) (string, error) {
 	//	TODO: 校验邮箱是否已注册
 	//var count int64
 	//s.db.Model(&models.User{}).Where("email = ?", data.Email).Limit(1).Count(&count)

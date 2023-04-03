@@ -20,6 +20,8 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 }
 
 var RequestLogHandler = func(c *gin.Context) {
+	handlerZapField := zap.String("handler", "request_log_handler")
+
 	log := log.GetCtx(c.Request.Context())
 
 	data := ""
@@ -40,7 +42,11 @@ var RequestLogHandler = func(c *gin.Context) {
 		zap.String("method", c.Request.Method),
 		zap.String("uri", c.Request.RequestURI),
 		zap.String("content-type", contentType),
-		zap.String("data", data))
+		zap.String("client_ip", c.ClientIP()),
+		zap.String("remote_ip", c.RemoteIP()),
+		zap.String("data", data),
+		handlerZapField,
+	)
 
 	blw := &bodyLogWriter{
 		body:           bytes.NewBufferString(""),
@@ -53,10 +59,12 @@ var RequestLogHandler = func(c *gin.Context) {
 
 	statusCode := c.Writer.Status()
 
-	//resData := blw.body.String()
+	resData := blw.body.String()
 
+	// TODO: 请求结束，记录请求结果数据
 	log.Info("请求结束",
 		zap.Int("status_code", statusCode),
-		//zap.String("res", resData),
+		zap.String("res", resData),
+		handlerZapField,
 	)
 }
