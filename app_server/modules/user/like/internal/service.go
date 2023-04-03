@@ -11,7 +11,7 @@ import (
 )
 
 type Service struct {
-	dao   *like.Dao
+	//dao   *like.Dao
 	cache *cache.LikeCache
 }
 
@@ -34,7 +34,7 @@ func GetLikeService() *Service {
 	}
 
 	return &Service{
-		dao:   like.GetLikeDao(),
+		//dao:   like.GetLikeDao(),
 		cache: cache.Like,
 	}
 }

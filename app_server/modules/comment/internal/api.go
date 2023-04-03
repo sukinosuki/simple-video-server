@@ -25,9 +25,9 @@ func (api *Api) Add(c *core.Context) (*comment.CommentResSimple, error) {
 		panic(err)
 	}
 
-	comment, err := api.service.Add(c, &commentAdd, commentAdd.MediaID, commentAdd.MediaType)
+	commentSimple, err := api.service.Add(c, &commentAdd, commentAdd.MediaID, commentAdd.MediaType)
 
-	return comment, err
+	return commentSimple, err
 }
 
 func (api *Api) Delete(c *core.Context) (bool, error) {

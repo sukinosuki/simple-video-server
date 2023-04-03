@@ -3,16 +3,16 @@ package app_server
 import (
 	"github.com/gin-gonic/gin"
 	"simple-video-server/app_server/middleware"
-	"simple-video-server/app_server/modules/auth/auth_http"
-	"simple-video-server/app_server/modules/comment/comment_http"
-	"simple-video-server/app_server/modules/email/email_http"
-	"simple-video-server/app_server/modules/follow/follow_http"
+	authHttp "simple-video-server/app_server/modules/auth/http"
+	commentHttp "simple-video-server/app_server/modules/comment/http"
+	emailHttp "simple-video-server/app_server/modules/email/http"
+	followHttp "simple-video-server/app_server/modules/follow/http"
 	"simple-video-server/app_server/modules/test_limit"
-	"simple-video-server/app_server/modules/upload/upload_http"
-	"simple-video-server/app_server/modules/user/collection/collection_http"
-	"simple-video-server/app_server/modules/user/like/like_http"
-	"simple-video-server/app_server/modules/user/user/user_http"
-	"simple-video-server/app_server/modules/video/video_http"
+	uploadHttp "simple-video-server/app_server/modules/upload/http"
+	userCollection "simple-video-server/app_server/modules/user/collection/http"
+	userLikeHttp "simple-video-server/app_server/modules/user/like/http"
+	userHttp "simple-video-server/app_server/modules/user/user/http"
+	videoHttp "simple-video-server/app_server/modules/video/http"
 )
 
 //var V1 *gin.RouterGroup
@@ -26,25 +26,25 @@ func SetupRoutes(r *gin.RouterGroup) {
 		middleware.RequestLogHandler,
 	)
 
-	video_http.SetupRoutes(v1)
+	videoHttp.SetupRoutes(v1)
 
-	auth_http.SetupRoutes(v1)
+	authHttp.SetupRoutes(v1)
 
-	user_http.SetupRoutes(v1)
+	userHttp.SetupRoutes(v1)
 
 	//test_student.SetupRoutes(v1)
 
-	collection_http.SetupRoutes(v1)
+	userCollection.SetupRoutes(v1)
 
-	like_http.SetupRoutes(v1)
+	userLikeHttp.SetupRoutes(v1)
 
-	upload_http.SetupRoutes(v1)
+	uploadHttp.SetupRoutes(v1)
 
-	follow_http.SetupRoutes(v1)
+	followHttp.SetupRoutes(v1)
 
-	email_http.SetupRoutes(v1)
+	emailHttp.SetupRoutes(v1)
 
-	comment_http.SetupRoutes(v1)
+	commentHttp.SetupRoutes(v1)
 
 	test_limit.SetupRoutes(v1)
 }

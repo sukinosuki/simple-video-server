@@ -5,7 +5,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"simple-video-server/app_server/modules/test_student"
 	"simple-video-server/config"
 	"simple-video-server/models"
 	"time"
@@ -33,7 +32,7 @@ func init() {
 		//Logger: logger.Default.LogMode(logMode),
 	})
 
-	db.AutoMigrate(
+	err = db.AutoMigrate(
 		&models.User{},
 		&models.Video{},
 		&models.UserVideoCollection{},
@@ -41,11 +40,11 @@ func init() {
 		&models.Follow{},
 		&models.Comment{},
 
-		&test_student.Student{},
-		&test_student.Information{},
-		&test_student.Book{},
-		&test_student.Language{},
-		&test_student.StudentLanguage{},
+		//&test_student.Student{},
+		//&test_student.Information{},
+		//&test_student.Book{},
+		//&test_student.Language{},
+		//&test_student.StudentLanguage{},
 	)
 
 	if err != nil {
@@ -53,6 +52,7 @@ func init() {
 	}
 
 	sqlDb, err := db.DB()
+
 	if err != nil {
 		panic(err)
 	}

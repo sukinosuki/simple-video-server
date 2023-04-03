@@ -6,15 +6,19 @@ import (
 	"simple-video-server/models"
 )
 
-type _dao struct {
+type Dao struct {
 	sdb *sqlx.DB
 }
 
-var dao = &_dao{
+var _dao = &Dao{
 	sdb: db.GetSqlxDB(),
 }
 
-func (d *_dao) GetAll(uid uint, query *VideoQuery) ([]models.Video, error) {
+func GetDao() *Dao {
+	return _dao
+}
+
+func (d *Dao) GetAll(uid uint, query *VideoQuery) ([]models.Video, error) {
 	sql := `
 		SELECT
 			* 

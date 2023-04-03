@@ -1,4 +1,4 @@
-package comment_http
+package http
 
 import (
 	"github.com/gin-gonic/gin"

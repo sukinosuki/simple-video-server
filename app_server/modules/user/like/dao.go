@@ -4,7 +4,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"gorm.io/gorm"
 	"simple-video-server/db"
-	"simple-video-server/models"
 )
 
 type Dao struct {
@@ -27,17 +26,17 @@ func GetLikeDao() *Dao {
 	return _dao
 }
 
-func (dao *Dao) Add(userVideoLike *models.UserVideoLike) error {
-	err := dao.db.Model(&models.UserVideoLike{}).Create(userVideoLike).Error
-	return err
-}
-
-func (dao *Dao) Delete(uid, vid uint) error {
-	err := dao.db.Model(&models.UserVideoLike{}).Where("uid = ? AND vid = ?", uid, vid).Limit(1).Delete(&models.UserVideoLike{}).Error
-	//err := dao.db.Unfollow(like).Error
-
-	return err
-}
+//func (dao *Dao) Add(userVideoLike *models.UserVideoLike) error {
+//	err := dao.db.Model(&models.UserVideoLike{}).Create(userVideoLike).Error
+//	return err
+//}
+//
+//func (dao *Dao) Delete(uid, vid uint) error {
+//	err := dao.db.Model(&models.UserVideoLike{}).Where("uid = ? AND vid = ?", uid, vid).Limit(1).Delete(&models.UserVideoLike{}).Error
+//	//err := dao.db.Unfollow(like).Error
+//
+//	return err
+//}
 
 //func (dao *Dao)GetAll(uid uint)  {
 //
