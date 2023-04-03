@@ -55,12 +55,17 @@ func Run(router *gin.Engine) {
 
 func SetupRouter() {
 
+	var router *gin.Engine
+
 	if !config.Env.Debug {
-
 		gin.SetMode(gin.ReleaseMode)
+		//router = gin.Default()
+		router = gin.New()
+		router.Use(gin.Recovery())
+	} else {
+		//gin.SetMode(gin.ReleaseMode)
+		router = gin.Default()
 	}
-
-	router := gin.Default()
 
 	SetupSwaggerRoute(router)
 

@@ -93,8 +93,8 @@ func (dao *Dao) GetOneByEmailAndPassword(email string, password string) (*models
 }
 
 // Add 新增
-func (dao *Dao) Add(tx *gorm.DB, user *models.User) (uint, error) {
-	err := tx.Model(dao.model).Create(user).Error
+func (dao *Dao) Add(tx *gorm.DB, user *models.User) (id uint, err error) {
+	err = tx.Model(dao.model).Create(user).Error
 
 	return user.ID, err
 }

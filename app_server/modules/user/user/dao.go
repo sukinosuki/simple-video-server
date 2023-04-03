@@ -11,9 +11,13 @@ type Dao struct {
 	model *models.User
 }
 
-var dao = &Dao{
+var _dao = &Dao{
 	db:    db.GetOrmDB(),
 	model: &models.User{},
+}
+
+func GetDao() *Dao {
+	return _dao
 }
 
 func (d *Dao) GetAll(query *UserQuery) ([]*UserSimple, error) {

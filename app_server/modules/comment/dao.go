@@ -7,17 +7,21 @@ import (
 	"simple-video-server/models"
 )
 
-type _dao struct {
+type Dao struct {
 	db    *gorm.DB
 	model *models.Comment
 }
 
-var Dao = &_dao{
+var _dao = &Dao{
 	db:    db.GetOrmDB(),
 	model: &models.Comment{},
 }
 
-func (d *_dao) Create(comment *models.Comment) error {
+func GetDao() *Dao {
+	return _dao
+}
+
+func (d *Dao) Create(comment *models.Comment) error {
 
 	tx := d.db.Model(d.model)
 
@@ -26,7 +30,7 @@ func (d *_dao) Create(comment *models.Comment) error {
 	return err
 }
 
-func (d *_dao) Delete(uid uint, mediaType int, mediaId uint, id uint) error {
+func (d *Dao) Delete(uid uint, mediaType int, mediaId uint, id uint) error {
 	tx := d.db.Model(d.model)
 	err := tx.
 		Where("id = ? AND media_id = ? AND media_type = ? AND uid = ?", id, mediaId, mediaType, uid).
@@ -35,7 +39,7 @@ func (d *_dao) Delete(uid uint, mediaType int, mediaId uint, id uint) error {
 	return err
 }
 
-func (d *_dao) GetMediaComment(mediaId uint) ([]*models.Comment, error) {
+func (d *Dao) GetMediaComment(mediaId uint) ([]*models.Comment, error) {
 	tx := d.db.Model(d.model)
 	var comment []*models.Comment
 	err := tx.
@@ -45,7 +49,7 @@ func (d *_dao) GetMediaComment(mediaId uint) ([]*models.Comment, error) {
 	return comment, err
 }
 
-func (d *_dao) IsVideoExists(mediaType int, mediaId uint) (bool, *models.Video, error) {
+func (d *Dao) IsVideoExists(mediaType int, mediaId uint) (bool, *models.Video, error) {
 	var video models.Video
 	err := d.db.Model(&models.Video{}).Where("id = ?", mediaId).First(&video).Error
 
@@ -60,7 +64,7 @@ func (d *_dao) IsVideoExists(mediaType int, mediaId uint) (bool, *models.Video, 
 	return true, &video, err
 }
 
-func (d *_dao) GetUserById(uid uint) (*models.User, error) {
+func (d *Dao) GetUserById(uid uint) (*models.User, error) {
 	var user models.User
 	tx := d.db.Model(&models.User{})
 	err := tx.First(&user, uid).Error

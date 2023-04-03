@@ -9,19 +9,23 @@ import (
 	"simple-video-server/pkg/global"
 )
 
-type _dao struct {
+type Dao struct {
 	db    *gorm.DB
 	sdb   *sqlx.DB
 	model *models.Video
 }
 
-var Dao = &_dao{
+var _dao = &Dao{
 	db:    db.GetOrmDB(),
 	sdb:   db.GetSqlxDB(),
 	model: &models.Video{},
 }
 
-func (d *_dao) Add(video *models.Video) error {
+func GetDao() *Dao {
+	return _dao
+}
+
+func (d *Dao) Add(video *models.Video) error {
 	tx := d.db.Model(d.model)
 
 	err := tx.Create(video).Error
@@ -29,7 +33,7 @@ func (d *_dao) Add(video *models.Video) error {
 	return err
 }
 
-func (d *_dao) GetById2(id uint) (*models.Video, error) {
+func (d *Dao) GetById2(id uint) (*models.Video, error) {
 
 	var video models.Video
 	tx := d.db.Model(d.model)
@@ -40,7 +44,7 @@ func (d *_dao) GetById2(id uint) (*models.Video, error) {
 }
 
 // GetById get video(with user) by id
-func (d *_dao) GetById(id uint) (*VideoResVideo, error) {
+func (d *Dao) GetById(id uint) (*VideoResVideo, error) {
 
 	var video VideoResVideo
 	err := global.MysqlDB.Model(d.model).
@@ -63,7 +67,7 @@ func (d *_dao) GetById(id uint) (*VideoResVideo, error) {
 	return &video, err
 }
 
-func (d *_dao) IsCollect(uid, vid uint) (bool, error) {
+func (d *Dao) IsCollect(uid, vid uint) (bool, error) {
 
 	var userVideoCollection models.UserVideoCollection
 
@@ -86,7 +90,7 @@ func (d *_dao) IsCollect(uid, vid uint) (bool, error) {
 	return true, nil
 }
 
-//	GetVideoCollectionCountById func (d *_dao) IsCollectBySqlx(uid, vid uint) (bool, error) {
+//	GetVideoCollectionCountById func (d *Dao) IsCollectBySqlx(uid, vid uint) (bool, error) {
 //		sql := `
 //		SELECT
 //			count(*)
@@ -108,7 +112,7 @@ func (d *_dao) IsCollect(uid, vid uint) (bool, error) {
 //
 
 // GetVideoCollectionCountById get video's collection count by id
-func (d *_dao) GetVideoCollectionCountById(vid uint) (int64, error) {
+func (d *Dao) GetVideoCollectionCountById(vid uint) (int64, error) {
 	var count int64
 	tx := d.db.Model(&models.UserVideoCollection{})
 
@@ -120,7 +124,7 @@ func (d *_dao) GetVideoCollectionCountById(vid uint) (int64, error) {
 }
 
 // GetAll 返回视频列表
-func (d *_dao) GetAll(uid *uint, query *VideoQuery) ([]VideoSimple, error) {
+func (d *Dao) GetAll(uid *uint, query *VideoQuery) ([]VideoSimple, error) {
 	var videos []VideoSimple
 
 	tx := d.db.Model(d.model)
@@ -139,7 +143,7 @@ func (d *_dao) GetAll(uid *uint, query *VideoQuery) ([]VideoSimple, error) {
 		tx.Where("video.uid = ?", uid)
 	}
 
-	if query.random {
+	if query.Random {
 		tx.
 			Order("RAND()").
 			Limit(query.GetSafeSize())
@@ -154,7 +158,7 @@ func (d *_dao) GetAll(uid *uint, query *VideoQuery) ([]VideoSimple, error) {
 	return videos, err
 }
 
-func (d *_dao) Update(uid, vid uint, update *VideoUpdate) error {
+func (d *Dao) Update(uid, vid uint, update *VideoUpdate) error {
 
 	db := d.db.Model(d.model)
 
@@ -182,7 +186,7 @@ func (d *_dao) Update(uid, vid uint, update *VideoUpdate) error {
 }
 
 // Delete delete one user's video by id
-func (d *_dao) Delete(uid, vid uint) error {
+func (d *Dao) Delete(uid, vid uint) error {
 
 	db := d.db.Model(d.model)
 

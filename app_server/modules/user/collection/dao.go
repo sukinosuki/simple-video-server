@@ -8,25 +8,29 @@ import (
 	"simple-video-server/models"
 )
 
-type _dao struct {
+type Dao struct {
 	db    *gorm.DB
 	sdb   *sqlx.DB
 	model *models.UserVideoCollection
 }
 
-var Dao = &_dao{
+var _dao = &Dao{
 	db:    db.GetOrmDB(),
 	sdb:   db.GetSqlxDB(),
 	model: &models.UserVideoCollection{},
 }
 
+func GetDao() *Dao {
+	return _dao
+}
+
 // Add AddCollection 用户新增收藏
-func (d *_dao) Add(collection *models.UserVideoCollection) error {
+func (d *Dao) Add(collection *models.UserVideoCollection) error {
 	return d.db.Model(d.model).Create(collection).Error
 }
 
 // Delete 删除用户收藏
-func (d *_dao) Delete(uid uint, vid uint) error {
+func (d *Dao) Delete(uid uint, vid uint) error {
 	// delete操作记得加上where条件
 	tx := d.db.Model(d.model)
 	err := tx.Where("uid = ? AND vid = ?", uid, vid).
@@ -37,7 +41,7 @@ func (d *_dao) Delete(uid uint, vid uint) error {
 }
 
 // GetAll get user's video collection
-func (d *_dao) GetAll(uid uint, query *CollectionQuery) ([]*UserVideoCollectionRes, error) {
+func (d *Dao) GetAll(uid uint, query *CollectionQuery) ([]*UserVideoCollectionRes, error) {
 	var collection []*UserVideoCollectionRes
 
 	tx := d.db.Model(d.model)
@@ -54,7 +58,7 @@ func (d *_dao) GetAll(uid uint, query *CollectionQuery) ([]*UserVideoCollectionR
 	return collection, err
 }
 
-func (d *_dao) IsVideoExists(vid uint) (bool, *models.Video, error) {
+func (d *Dao) IsVideoExists(vid uint) (bool, *models.Video, error) {
 	tx := d.db.Model(&models.Video{})
 
 	var video models.Video
@@ -72,7 +76,7 @@ func (d *_dao) IsVideoExists(vid uint) (bool, *models.Video, error) {
 	return true, &video, nil
 }
 
-//func (d *_dao) GetAll2(uid uint) ([]*UserVideoCollectionRes, error) {
+//func (d *Dao) GetAll2(uid uint) ([]*UserVideoCollectionRes, error) {
 //
 //	var userVideoCollection []*UserVideoCollectionRes
 //
@@ -107,7 +111,7 @@ func (d *_dao) IsVideoExists(vid uint) (bool, *models.Video, error) {
 //}
 
 // IsCollect 用户是否已收藏
-func (d *_dao) IsCollect(uid, vid uint) (bool, error) {
+func (d *Dao) IsCollect(uid, vid uint) (bool, error) {
 	tx := d.db.Model(d.model)
 
 	var collection models.UserVideoCollection

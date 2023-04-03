@@ -7,15 +7,19 @@ import (
 	"simple-video-server/models"
 )
 
-type _dao struct {
+type Dao struct {
 	db *gorm.DB
 }
 
-var Dao = &_dao{
+var dao = &Dao{
 	db: db.GetOrmDB(),
 }
 
-func (d *_dao) ExistsByEmail(email string) (bool, error) {
+func GetDao() *Dao {
+	return dao
+}
+
+func (d *Dao) ExistsByEmail(email string) (bool, error) {
 
 	//var count int64
 	var user models.User

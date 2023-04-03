@@ -20,7 +20,7 @@ type VideoQuery struct {
 	common.Pager
 	//UID     *uint  `json:"uid" form:"uid"`
 	Exclude []uint `json:"exclude" form:"exclude"`
-	random  bool
+	Random  bool
 }
 
 type VideoSimple struct {
