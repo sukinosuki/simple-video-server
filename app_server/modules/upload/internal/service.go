@@ -40,7 +40,7 @@ func (s *Service) Upload(c *core.Context, data *upload2.UploadData) (string, err
 	}
 
 	// TODO: 文件名抽离
-	fileName := fmt.Sprintf("temp/admin_temp/simple-video/%s/%d/_%d_%s", uploadClass.Value, uid, time.Now().UnixNano(), header.Filename)
+	fileName := fmt.Sprintf("temp/admin_temp/simple-video/%s/%d/_%d_%s", uploadClass.ValueString, uid, time.Now().UnixNano(), header.Filename)
 
 	err = upload(file, fileName)
 	if err != nil {

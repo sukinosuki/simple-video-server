@@ -31,13 +31,6 @@ func (c *FollowCache) GetUserFollowerKey(uid uint) string {
 	return key
 }
 
-//func (c *FollowCache) GetUserFollowers(uid uint)  {
-//
-//	key:=c.GetUserFollowerKey(uid)
-//
-//	global.RDB.
-//}
-
 func (c *FollowCache) IsFollowingOneUser(uid, targetUid uint) (bool, error) {
 	//followingKey := getFollowingKey(*c.UID)
 	//followerKey := getFollowerKey(targetUID)

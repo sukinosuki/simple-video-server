@@ -5,11 +5,11 @@ import "simple-video-server/common"
 type ResetPasswordMethod = common.CodeValue[string, string]
 
 var Email = &ResetPasswordMethod{
-	Code:  "email",
-	Value: "email",
+	Code:        "email",
+	ValueString: "email",
 }
 
 var Sms = &ResetPasswordMethod{
-	Code:  "sms",
-	Value: "sms",
+	Code:        "sms",
+	ValueString: "sms",
 }

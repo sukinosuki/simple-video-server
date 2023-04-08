@@ -11,15 +11,15 @@ var uploadCateMap = make(map[int]*UploadType)
 
 var Video = &UploadType{
 	common.CodeValue[int, string]{
-		Code:  1,
-		Value: "video",
+		Code:        1,
+		ValueString: "video",
 	},
 }
 
 var Picture = &UploadType{
 	common.CodeValue[int, string]{
-		Code:  2,
-		Value: "picture",
+		Code:        2,
+		ValueString: "picture",
 	},
 }
 

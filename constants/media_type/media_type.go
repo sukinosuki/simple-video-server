@@ -5,13 +5,13 @@ import "simple-video-server/common"
 type MediaType = common.CodeValue[int, string]
 
 var Video = &MediaType{
-	Code:  1,
-	Value: "video",
+	Code:        1,
+	ValueString: "video",
 }
 
 var Post = &MediaType{
-	Code:  2,
-	Value: "post",
+	Code:        2,
+	ValueString: "post",
 }
 
 var MediaTypeMaps = make(map[int]*MediaType)

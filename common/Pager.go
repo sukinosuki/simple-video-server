@@ -5,13 +5,13 @@ import "fmt"
 //type StringString = CodeValue[string, string]
 
 var Asc = StringString{
-	Code:  "asc",
-	Value: "asc",
+	Code:        "asc",
+	ValueString: "asc",
 }
 
 var Desc = StringString{
-	Code:  "desc",
-	Value: "desc",
+	Code:        "desc",
+	ValueString: "desc",
 }
 
 type Order struct {

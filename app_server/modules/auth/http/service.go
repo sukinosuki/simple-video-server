@@ -10,7 +10,6 @@ import (
 	"simple-video-server/app_server/modules/auth"
 	"simple-video-server/app_server/modules/email"
 	"simple-video-server/constants/email_action_type"
-	"simple-video-server/constants/gender"
 	"simple-video-server/constants/reset_password_method"
 	"simple-video-server/core"
 	"simple-video-server/db"
@@ -168,6 +167,7 @@ func (s *_Service) Login(c *core.Context, userLogin *auth.LoginForm) *auth.Login
 				Enabled:   user.Enabled,
 				Nickname:  user.Nickname,
 				Email:     user.Email,
+				Gender:    *user.Gender,
 			},
 			LikeCount:       0, //TODO
 			DislikeCount:    0, //TODO
@@ -202,7 +202,7 @@ func (s *_Service) GetProfile(c *core.Context, uid uint) *auth.LoginResProfile {
 			Nickname:  user.Nickname,
 			Email:     user.Email,
 			Birthday:  user.Birthday,
-			Gender:    user.Gender,
+			Gender:    *user.Gender,
 			Avatar:    user.Avatar,
 		},
 		LikeCount:       0, // TODO
@@ -301,18 +301,18 @@ func (s *_Service) UpdateProfile(c *core.Context, form *auth.UpdateForm) error {
 		}
 	}()
 
-	_gender := gender.GetByCode(form.Gender)
-
-	if _gender == nil {
-		//TODO
-		panic(errors.New("gender错误"))
-	}
+	//_gender := gender.GetByCode(form.Gender)
+	//
+	//if _gender == nil {
+	//	//TODO
+	//	panic(errors.New("gender错误"))
+	//}
 
 	user := models.User{
 		ID:       *c.AuthUID,
 		Nickname: form.Nickname,
 		Avatar:   form.Avatar,
-		Gender:   _gender.Code,
+		Gender:   form.Gender,
 		Birthday: form.Birthday,
 	}
 

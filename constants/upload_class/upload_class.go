@@ -11,22 +11,22 @@ var uploadClassMap = make(map[int]*UploadClass)
 
 var OneVideo = &UploadClass{
 	common.CodeValue[int, string]{
-		Code:  1,
-		Value: "moment-video",
+		Code:        1,
+		ValueString: "moment-video",
 	},
 }
 
 var VideoCover = &UploadClass{
 	common.CodeValue[int, string]{
-		Code:  2,
-		Value: "moment-video-cover",
+		Code:        2,
+		ValueString: "moment-video-cover",
 	},
 }
 
 var UserAvatar = &UploadClass{
 	common.CodeValue[int, string]{
-		Code:  3,
-		Value: "user-avatar",
+		Code:        3,
+		ValueString: "user-avatar",
 	},
 }
 

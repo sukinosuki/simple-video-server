@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"simple-video-server/db"
 	"simple-video-server/models"
@@ -102,14 +103,16 @@ func (dao *Dao) Add(tx *gorm.DB, user *models.User) (id uint, err error) {
 // UpdateProfile Update 更新user
 func (dao *Dao) UpdateProfile(tx *gorm.DB, user *models.User) error {
 
-	// 更新指定字段
-	err := tx.
-		Where("id = ?", user.ID).
-		Select("avatar", "nickname", "gender", "birthday").
-		Updates(user).
-		Error
+	fmt.Println("user ")
+	fmt.Println("user2 ", user)
 
-	return err
+	// 更新指定字段
+	result := tx.
+		//Where("id = ?", user.ID).
+		Select("avatar", "nickname", "gender", "birthday").
+		Updates(user)
+
+	return result.Error
 }
 
 // Updates 更新user非0值字段

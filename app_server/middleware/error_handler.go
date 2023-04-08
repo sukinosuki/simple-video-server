@@ -66,6 +66,17 @@ var ErrorHandler = func(c *gin.Context) {
 				return
 			}
 
+			// 自定义的校验错误
+			if e, ok := err.(*validation.ValidationError); ok {
+				c.AbortWithStatusJSON(http.StatusBadRequest, &common.AppResponse[any]{
+					Code: business_code.RequestErr.Code(),
+					Msg:  e.Msg,
+					//ErrMsg: msg,
+				})
+
+				return
+			}
+
 			//// 自定义错误
 			//if errCode, ok := err.(err_code.ErrCode); ok {
 			//	c.AbortWithStatusJSON(http.StatusOK, &common.AppResponse[any]{

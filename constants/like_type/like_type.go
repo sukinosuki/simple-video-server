@@ -17,15 +17,15 @@ var likeTypeMap = make(map[int]*LikeType)
 
 var Like = &LikeType{
 	common.CodeValue[int, string]{
-		Code:  1,
-		Value: "like",
+		Code:        1,
+		ValueString: "like",
 	},
 }
 
 var Dislike = &LikeType{
 	common.CodeValue[int, string]{
-		Code:  2,
-		Value: "dislike",
+		Code:        2,
+		ValueString: "dislike",
 	},
 }
 
@@ -37,7 +37,7 @@ func init() {
 	//for k, v := range likeTypeMap {
 	//	fmt.Println("k ", k)
 	//	fmt.Println("v ", *v)
-	//	fmt.Println("value ", v.Value)
+	//	fmt.Println("value ", v.ValueString)
 	//}
 }
 
@@ -51,9 +51,9 @@ func GetByCode(code int) (*LikeType, bool) {
 	return nil, false
 }
 
-//var Like = common.CodeValue[string]{Code: 1, Value: "like"}
+//var Like = common.CodeValue[string]{Code: 1, ValueString: "like"}
 //
-//var Dislike = common.CodeValue[string]{Code: 1, Value: "like"}
+//var Dislike = common.CodeValue[string]{Code: 1, ValueString: "like"}
 
 //func (c *LikeType) IsLikeType(code int) int {
 //	vo := reflect.ValueOf(c)
@@ -70,9 +70,9 @@ func GetByCode(code int) (*LikeType, bool) {
 //var LikeTypeMap = make(map[int]*common.CodeValue[string])
 //
 //var (
-//	//LikeCode = common.CodeValue[string]{Code: 1, Value: "like"}
+//	//LikeCode = common.CodeValue[string]{Code: 1, ValueString: "like"}
 //	LikeCode = common.GenerateNewCodeValue(LikeTypeMap, 1, "like")
 //
 //	DislikeCode = common.GenerateNewCodeValue(LikeTypeMap, 2, "dislike")
-//	//DislikeCode = common.CodeValue[string]{Code: 2, Value: "dislike"}
+//	//DislikeCode = common.CodeValue[string]{Code: 2, ValueString: "dislike"}
 //)

@@ -88,6 +88,7 @@ func init() {
 	for _, v := range args {
 		arr := strings.Split(v, "=")
 		switch arr[0] {
+		// 命令参数替换配置值
 		case "release":
 			if arr[1] == "true" {
 				_appConfig.Env.Debug = false
