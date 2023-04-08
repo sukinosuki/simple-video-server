@@ -10,8 +10,6 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 
 	// TODO:多种类型媒体收藏(video、post...)
 	// TODO:重复的toHandler方法
-	//_api := GetApi()
-	//_api := GetApi()
 	// 注册
 	v1.POST("/auth/register", core.ToHandler(_api.RegisterHandler, "user"))
 
@@ -33,11 +31,5 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 
 		// 注销
 		auth.POST("/auth/logoff", core.ToHandler(_api.Logoff, "user"))
-
-		//// 登录用户新增关注
-		//auth.POST("/auth/follower/:id", core.ToHandler(_api.Follow, "user"))
-		//
-		//// 登录用户删除关注
-		//auth.DELETE("/auth/follower/:id", core.ToHandler(_api.Unfollow, "user"))
 	}
 }

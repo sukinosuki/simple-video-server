@@ -1,10 +1,10 @@
-package internal
+package http
 
 import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"simple-video-server/app_server/cache"
+	"simple-video-server/app_server/modules/user/like"
 	"simple-video-server/app_server/modules/video"
 	"simple-video-server/constants/like_type"
 	"simple-video-server/constants/video_status"
@@ -14,18 +14,20 @@ import (
 )
 
 type service struct {
-	dao   *video.Dao
-	cache *cache.VideoCache
+	dao       *video.Dao
+	cache     *video.Cache
+	likeCache *like.Cache
 }
 
 var Service = &service{
-	dao:   video.GetDao(),
-	cache: cache.Video,
+	dao:       video.GetDao(),
+	cache:     video.GetCache(),
+	likeCache: like.GetCache(),
 }
 
 func (s *service) Add2(uid uint, add video.VideoAdd, url string, cover string) error {
 
-	video := &models.Video{
+	_video := &models.Video{
 		Uid:    uid,
 		Title:  add.Title,
 		Cover:  cover,
@@ -34,10 +36,9 @@ func (s *service) Add2(uid uint, add video.VideoAdd, url string, cover string) e
 		Status: video_status.Auditing,
 	}
 
-	err := s.dao.Add(video)
+	err := s.dao.Add(_video)
 
 	return err
-	//return db.MysqlDB.Model(&Video{}).follow(video).Error
 }
 
 func (s *service) GetAll(c *core.Context, uid *uint, query *video.VideoQuery) ([]video.VideoSimple, error) {
@@ -73,7 +74,7 @@ func (s *service) Get(c *core.Context, vid uint) (*video.VideoRes, error) {
 	// 已登录
 	if c.Authorized {
 		//TODO: 捕获错误
-		likeType, _ := cache.Like.GetLikeTypeByUserAndVideo(*c.AuthUID, vid)
+		likeType, _ := s.likeCache.GetLikeTypeByUserAndVideo(*c.AuthUID, vid)
 		//if err != nil {
 		//	return nil, err
 		//}

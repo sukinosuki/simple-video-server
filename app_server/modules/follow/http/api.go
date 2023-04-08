@@ -1,19 +1,23 @@
-package internal
+package http
 
 import (
 	"simple-video-server/app_server/modules/follow"
 	"simple-video-server/core"
 )
 
-type followApi struct {
+type Api struct {
 	service *_service
 }
 
-var FollowApi = &followApi{
+var _api = &Api{
 	service: Service,
 }
 
-func (api *followApi) Follow(c *core.Context) (bool, error) {
+func GetApi() *Api {
+	return _api
+}
+
+func (api *Api) Follow(c *core.Context) (bool, error) {
 	//var followAdd *FollowAdd
 	//err := c.ShouldBind(&followAdd)
 	//if err != nil {
@@ -33,7 +37,7 @@ func (api *followApi) Follow(c *core.Context) (bool, error) {
 	return true, err
 }
 
-func (api *followApi) Unfollow(c *core.Context) (bool, error) {
+func (api *Api) Unfollow(c *core.Context) (bool, error) {
 	//var followAdd *FollowAdd
 	//err := c.ShouldBind(&followAdd)
 	//if err != nil {
@@ -52,7 +56,7 @@ func (api *followApi) Unfollow(c *core.Context) (bool, error) {
 }
 
 // FollowScores 获取follow排名
-func (api *followApi) FollowScores(c *core.Context) ([]*follow.UserFollowerRankResSimple, error) {
+func (api *Api) FollowScores(c *core.Context) ([]*follow.UserFollowerRankResSimple, error) {
 	var query follow.UserFollowRankQuery
 	err := c.ShouldBind(&query)
 	if err != nil {
@@ -71,7 +75,7 @@ func (api *followApi) FollowScores(c *core.Context) ([]*follow.UserFollowerRankR
 	return users, err
 }
 
-func (api *followApi) GetUserFollowers(c *core.Context) ([]*follow.UserFollowerResSimple, error) {
+func (api *Api) GetUserFollowers(c *core.Context) ([]*follow.UserFollowerResSimple, error) {
 
 	var query follow.UserFollowerQuery
 	err := c.ShouldBind(&query)
@@ -89,7 +93,7 @@ func (api *followApi) GetUserFollowers(c *core.Context) ([]*follow.UserFollowerR
 	return followers, err
 }
 
-func (api *followApi) GetUserFollowing(c *core.Context) ([]*follow.UserFollowerResSimple, error) {
+func (api *Api) GetUserFollowing(c *core.Context) ([]*follow.UserFollowerResSimple, error) {
 	var query follow.UserFollowerQuery
 	err := c.ShouldBind(&query)
 	if err != nil {

@@ -1,4 +1,4 @@
-package cache
+package video
 
 import (
 	"context"
@@ -7,19 +7,23 @@ import (
 	"strconv"
 )
 
-type VideoCache struct {
+type Cache struct {
 }
 
-var Video = &VideoCache{}
+var _video = &Cache{}
+
+func GetCache() *Cache {
+	return _video
+}
 
 // get like count key
-func (vc *VideoCache) getVideoLikeCountKey(vid uint) string {
+func (vc *Cache) getVideoLikeCountKey(vid uint) string {
 	videoLikeCountKey := fmt.Sprintf("video:%d:like_count", vid)
 	return videoLikeCountKey
 }
 
 // get dislike count key
-func (vc *VideoCache) getVideoDislikeCountKey(vid uint) string {
+func (vc *Cache) getVideoDislikeCountKey(vid uint) string {
 
 	videoDislikeCountKey := fmt.Sprintf("video:%d:dislike_count", vid)
 
@@ -27,7 +31,7 @@ func (vc *VideoCache) getVideoDislikeCountKey(vid uint) string {
 }
 
 // GetVideoLikeCount video id获取视频点赞数
-func (vc *VideoCache) GetVideoLikeCount(vid uint) (int, error) {
+func (vc *Cache) GetVideoLikeCount(vid uint) (int, error) {
 
 	ctx := context.Background()
 	likeCountKey := vc.getVideoLikeCountKey(vid)
@@ -44,7 +48,7 @@ func (vc *VideoCache) GetVideoLikeCount(vid uint) (int, error) {
 }
 
 // GetVideoDislikeCount video id获取视频点踩数
-func (vc *VideoCache) GetVideoDislikeCount(vid uint) (int, error) {
+func (vc *Cache) GetVideoDislikeCount(vid uint) (int, error) {
 	ctx := context.Background()
 	key := vc.getVideoDislikeCountKey(vid)
 	result, err := global.RDB.Get(ctx, key).Result()
@@ -57,7 +61,7 @@ func (vc *VideoCache) GetVideoDislikeCount(vid uint) (int, error) {
 }
 
 // IncreaseLikeCount 加1视频点赞数
-func (vc *VideoCache) IncreaseLikeCount(uid, vid uint, likeType int) error {
+func (vc *Cache) IncreaseLikeCount(uid, vid uint, likeType int) error {
 	var ctx = context.Background()
 
 	key := vc.getVideoLikeCountKey(vid)
@@ -68,7 +72,7 @@ func (vc *VideoCache) IncreaseLikeCount(uid, vid uint, likeType int) error {
 }
 
 // DecreaseLikeCount 减1视频点赞数
-func (vc *VideoCache) DecreaseLikeCount(uid, vid uint) error {
+func (vc *Cache) DecreaseLikeCount(uid, vid uint) error {
 	var ctx = context.Background()
 	key := vc.getVideoLikeCountKey(vid)
 
@@ -78,7 +82,7 @@ func (vc *VideoCache) DecreaseLikeCount(uid, vid uint) error {
 }
 
 // IncreaseDislikeCount 加1视频点踩数
-func (vc *VideoCache) IncreaseDislikeCount(uid, vid uint, likeType int) error {
+func (vc *Cache) IncreaseDislikeCount(uid, vid uint, likeType int) error {
 	var ctx = context.Background()
 
 	key := vc.getVideoDislikeCountKey(vid)
@@ -89,7 +93,7 @@ func (vc *VideoCache) IncreaseDislikeCount(uid, vid uint, likeType int) error {
 }
 
 // DecreaseDislikeCount 减1视频点踩数
-func (vc *VideoCache) DecreaseDislikeCount(uid, vid uint) error {
+func (vc *Cache) DecreaseDislikeCount(uid, vid uint) error {
 	var ctx = context.Background()
 	key := vc.getVideoDislikeCountKey(vid)
 

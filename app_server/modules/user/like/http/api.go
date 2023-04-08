@@ -1,4 +1,4 @@
-package internal
+package http
 
 import (
 	"simple-video-server/app_server/modules/user/like"
@@ -20,14 +20,16 @@ func GetApi() *Api {
 // Add 点赞
 func (api *Api) Add(c *core.Context) (bool, error) {
 
-	var videoLike like.VideoLike
+	//var videoLike like.VideoLike
+	//
+	//err := c.ShouldBind(&videoLike)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	err := c.ShouldBind(&videoLike)
-	if err != nil {
-		panic(err)
-	}
+	form := core.MustBindForm[like.VideoLike](c)
 
-	err = api.service.Add(c, &videoLike)
+	err := api.service.Add(c, *c.AuthUID, c.GetParamId(), form)
 	if err != nil {
 		panic(err)
 	}
@@ -37,18 +39,9 @@ func (api *Api) Add(c *core.Context) (bool, error) {
 
 // Delete 取消点赞
 func (api *Api) Delete(c *core.Context) (bool, error) {
-	var videoLike like.VideoLike
-	err := c.ShouldBind(&videoLike)
+	form := core.MustBindForm[like.VideoLike](c)
 
-	if err != nil {
-		panic(err)
-	}
-
-	err = api.service.Delete(c, &videoLike)
-
-	if err != nil {
-		panic(err)
-	}
+	err := api.service.Delete(c, *c.AuthUID, c.GetParamId(), form)
 
 	return true, err
 }

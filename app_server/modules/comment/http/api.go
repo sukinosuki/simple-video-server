@@ -1,4 +1,4 @@
-package internal
+package http
 
 import (
 	"simple-video-server/app_server/modules/comment"

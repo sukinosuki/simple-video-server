@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"simple-video-server/app_server/cache"
 	"simple-video-server/app_server/modules/auth"
 	"simple-video-server/app_server/modules/email"
+	"simple-video-server/app_server/modules/follow"
 	"simple-video-server/constants/email_action_type"
 	"simple-video-server/constants/reset_password_method"
 	"simple-video-server/core"
@@ -19,17 +19,19 @@ import (
 )
 
 type _Service struct {
-	authDao    *auth.Dao
-	cache      *redis.Client
-	emailCache *email.Cache
-	db         *gorm.DB
+	authDao     *auth.Dao
+	cache       *redis.Client
+	followCache *follow.Cache
+	emailCache  *email.Cache
+	db          *gorm.DB
 }
 
 var service = &_Service{
-	authDao:    auth.GetAuthDao(),
-	cache:      db.GetRedisDB(),
-	emailCache: email.GetCache(),
-	db:         db.GetOrmDB(),
+	authDao:     auth.GetAuthDao(),
+	cache:       db.GetRedisDB(),
+	emailCache:  email.GetCache(),
+	followCache: follow.GetFollowCache(),
+	db:          db.GetOrmDB(),
 }
 
 //func GetService() *_Service {
@@ -191,8 +193,8 @@ func (s *_Service) GetProfile(c *core.Context, uid uint) *auth.LoginResProfile {
 	if err != nil {
 		panic(err)
 	}
-	followersCount, _ := cache.Follow.OneUserFollowersCount(uid)
-	followingCount, _ := cache.Follow.OneUserFollowingCount(uid)
+	followersCount, _ := s.followCache.OneUserFollowersCount(uid)
+	followingCount, _ := s.followCache.OneUserFollowingCount(uid)
 
 	profile := &auth.LoginResProfile{
 		User: auth.LoginResProfileUser{

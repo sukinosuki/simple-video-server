@@ -1,4 +1,4 @@
-package cache
+package follow
 
 import (
 	"context"
@@ -7,16 +7,20 @@ import (
 	"simple-video-server/db"
 )
 
-type FollowCache struct {
+type Cache struct {
 	cache *redis.Client
 }
 
-var Follow = &FollowCache{
+var _cache = &Cache{
 	cache: db.GetRedisDB(),
 }
 
+func GetFollowCache() *Cache {
+	return _cache
+}
+
 // GetUserFollowingKey 获取用户的关注key
-func (c *FollowCache) GetUserFollowingKey(uid uint) string {
+func (c *Cache) GetUserFollowingKey(uid uint) string {
 
 	key := fmt.Sprintf("user:%d:following", uid)
 
@@ -24,14 +28,14 @@ func (c *FollowCache) GetUserFollowingKey(uid uint) string {
 }
 
 // GetUserFollowerKey 获取用户的粉丝key
-func (c *FollowCache) GetUserFollowerKey(uid uint) string {
+func (c *Cache) GetUserFollowerKey(uid uint) string {
 
 	key := fmt.Sprintf("user:%d:follower", uid)
 
 	return key
 }
 
-func (c *FollowCache) IsFollowingOneUser(uid, targetUid uint) (bool, error) {
+func (c *Cache) IsFollowingOneUser(uid, targetUid uint) (bool, error) {
 	//followingKey := getFollowingKey(*c.UID)
 	//followerKey := getFollowerKey(targetUID)
 	followingKey := c.GetUserFollowingKey(uid)
@@ -41,14 +45,14 @@ func (c *FollowCache) IsFollowingOneUser(uid, targetUid uint) (bool, error) {
 	return result, err
 }
 
-func (c *FollowCache) OneUserFollowersCount(uid uint) (int64, error) {
+func (c *Cache) OneUserFollowersCount(uid uint) (int64, error) {
 	followerKey := c.GetUserFollowerKey(uid)
 	result, err := c.cache.SCard(context.Background(), followerKey).Result()
 
 	return result, err
 }
 
-func (c *FollowCache) OneUserFollowingCount(uid uint) (int64, error) {
+func (c *Cache) OneUserFollowingCount(uid uint) (int64, error) {
 	followingKey := c.GetUserFollowingKey(uid)
 	return c.cache.SCard(context.Background(), followingKey).Result()
 }

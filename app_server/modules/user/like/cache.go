@@ -1,4 +1,4 @@
-package cache
+package like
 
 import (
 	"context"
@@ -7,13 +7,17 @@ import (
 	"strconv"
 )
 
-type LikeCache struct {
+type Cache struct {
 }
 
-var Like = &LikeCache{}
+var _likeCache = &Cache{}
+
+func GetCache() *Cache {
+	return _likeCache
+}
 
 // uid获取key: user:1:like_video
-func (ca *LikeCache) getUserLikeVideoKey(uid uint) string {
+func (ca *Cache) getUserLikeVideoKey(uid uint) string {
 	likeKey := fmt.Sprintf("user:%d:like_video", uid)
 
 	return likeKey
@@ -27,7 +31,7 @@ func getUserLikeVideoKey(uid uint) string {
 }
 
 // AddUserLike 增加用户点赞(点踩)
-func (ca *LikeCache) AddUserLike(uid, vid uint, likeType int) error {
+func (ca *Cache) AddUserLike(uid, vid uint, likeType int) error {
 	var ctx = context.Background()
 
 	// field为video id
@@ -45,13 +49,14 @@ func (ca *LikeCache) AddUserLike(uid, vid uint, likeType int) error {
 // 返回1: 用户对视频like操作为点赞
 // 返回2: 用户对视频like操作为点踩
 // @return
-func (ca *LikeCache) GetLikeTypeByUserAndVideo(uid, vid uint) (int, error) {
+func (ca *Cache) GetLikeTypeByUserAndVideo(uid, vid uint) (int, error) {
 	var ctx = context.Background()
 
 	likeKey := getUserLikeVideoKey(uid)
 
 	field := strconv.Itoa(int(vid))
 
+	// result是字符串
 	result, err := global.RDB.HGet(ctx, likeKey, field).Result()
 
 	if err == nil {
@@ -64,7 +69,7 @@ func (ca *LikeCache) GetLikeTypeByUserAndVideo(uid, vid uint) (int, error) {
 }
 
 // DeleteUserLike 删除用户点赞
-func (ca *LikeCache) DeleteUserLike(uid, vid uint) error {
+func (ca *Cache) DeleteUserLike(uid, vid uint) error {
 	var ctx = context.Background()
 	likeKey := getUserLikeVideoKey(uid)
 	field := strconv.Itoa(int(vid))
