@@ -25,9 +25,8 @@ func Run(router *gin.Engine) {
 
 	port := fmt.Sprintf(":%d", config.Env.Port)
 
-	fmt.Println("run000 port ", port)
-
 	go func() {
+		fmt.Println("run0000 router run")
 		err := router.Run(port)
 		fmt.Println("run1111 err ", err)
 
@@ -59,7 +58,6 @@ func SetupRouter() {
 
 	if !config.Env.Debug {
 		gin.SetMode(gin.ReleaseMode)
-		//router = gin.Default()
 		router = gin.New()
 		router.Use(gin.Recovery())
 	} else {

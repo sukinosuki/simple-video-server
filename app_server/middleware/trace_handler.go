@@ -14,7 +14,10 @@ const traceIdKey = "trace-id"
 var TraceHandler = func(c *gin.Context) {
 	log.Logger.Info("请求limit开始")
 	//err := core.Limiter.Wait(context.Background())
-	allow := core.Limiter.Allow()
+	//allow := core.Limiter.Allow()
+	rateLimiter := core.NewRateLimiter()
+	allow := rateLimiter.SlidingWindowTryAcquire(c.Request.URL.RawQuery)
+
 	if allow {
 		log.Logger.Info("请求limit结束 ")
 	} else {

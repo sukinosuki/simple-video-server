@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"io"
+	"simple-video-server/app_server/modules/log/request_log"
 	"simple-video-server/pkg/log"
 )
 
@@ -16,16 +18,15 @@ type bodyLogWriter struct {
 func (w bodyLogWriter) Write(b []byte) (int, error) {
 
 	w.body.Write(b)
+
 	return w.ResponseWriter.Write(b)
 }
 
-var RequestLogHandler = func(c *gin.Context) {
-	handlerZapField := zap.String("handler", "request_log_handler")
+func getPayload(c *gin.Context) string {
+	payload := ""
 
-	log := log.GetCtx(c.Request.Context())
-
-	data := ""
 	contentType := c.Request.Header.Get("Content-Type")
+
 	if contentType == "application/json" {
 		_bytes, err := io.ReadAll(c.Request.Body)
 
@@ -33,20 +34,21 @@ var RequestLogHandler = func(c *gin.Context) {
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(_bytes))
 
 		if err == nil {
-			data = string(_bytes)
+			payload = string(_bytes)
 		}
 	}
 
-	//log.Profile(c, "%s | %s | data: %s", c.Request.Method, c.Request.RequestURI, data)
-	log.Info("请求开始",
-		zap.String("method", c.Request.Method),
-		zap.String("uri", c.Request.RequestURI),
-		zap.String("content-type", contentType),
-		zap.String("client_ip", c.ClientIP()),
-		zap.String("remote_ip", c.RemoteIP()),
-		zap.String("data", data),
-		handlerZapField,
-	)
+	return payload
+}
+
+var RequestLogHandler = func(c *gin.Context) {
+
+	log := log.GetCtx(c.Request.Context()).With(zap.String("handler", "request_log_handler"))
+
+	payload := getPayload(c)
+
+	log.Info("请求开始:", zap.String("url", c.Request.URL.RawPath))
+	// TODO: log请求前信息
 
 	blw := &bodyLogWriter{
 		body:           bytes.NewBufferString(""),
@@ -57,14 +59,18 @@ var RequestLogHandler = func(c *gin.Context) {
 
 	c.Next()
 
-	statusCode := c.Writer.Status()
-
+	// 获取响应数据
 	resData := blw.body.String()
 
-	// TODO: 请求结束，记录请求结果数据
-	log.Info("请求结束",
-		zap.Int("status_code", statusCode),
-		zap.String("res", resData),
-		handlerZapField,
-	)
+	go func() {
+		defer func() {
+			err := recover()
+			if err != nil {
+				fmt.Println("记录请求日志失败 ", err)
+			}
+		}()
+
+		logDao := request_log.GetDao()
+		logDao.Add(c, payload, resData)
+	}()
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"simple-video-server/pkg/global"
+	"simple-video-server/pkg/redis_util"
 	"time"
 )
 
@@ -16,7 +17,7 @@ func GetCache() *Cache {
 	return cache
 }
 
-func getKey(email string, actionType string) string {
+func _generateKeyByEmailAndActionType(email string, actionType string) string {
 
 	key := fmt.Sprintf("email_code:%s:%s", actionType, email)
 
@@ -24,29 +25,29 @@ func getKey(email string, actionType string) string {
 }
 
 func (c *Cache) Set(email string, actionType string, value string) error {
-	//key := fmt.Sprintf("email_code:%s:%s", actionType, email)
-	key := getKey(email, actionType)
+	key := _generateKeyByEmailAndActionType(email, actionType)
 
+	//TODO: 有效时间配置化
 	duration := 30 * time.Minute
 
-	_, err := global.RDB.Set(context.Background(), key, value, duration).Result() //TODO: 有效时间配置化
+	err := redis_util.Set(key, value, duration)
 
 	return err
 }
 
 func (c *Cache) Get(email string, actionType string) (string, error) {
-	key := getKey(email, actionType)
+	key := _generateKeyByEmailAndActionType(email, actionType)
 
-	result, err := global.RDB.Get(context.Background(), key).Result()
+	result, err := redis_util.Get[string](key)
+	if err != nil {
+		return "", err
+	}
 
-	return result, err
+	return *result, err
 }
 
-func (c *Cache) Delete(email string, actionType string) error {
-	key := getKey(email, actionType)
+func (c *Cache) Delete(email string, actionType string) (int64, error) {
+	key := _generateKeyByEmailAndActionType(email, actionType)
 
-	num, err := global.RDB.Del(context.Background(), key).Result()
-	fmt.Println("删除key ", num)
-
-	return err
+	return global.RDB.Del(context.Background(), key).Result()
 }

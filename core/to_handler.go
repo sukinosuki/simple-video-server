@@ -19,6 +19,10 @@ func ToHandler[T any](handler func(coreContext *Context) (T, error), moduleName 
 		uid, _ := app_ctx.GetUid(c)
 		coreContext.AuthUID = uid
 		authorized := uid != nil
+
+		// 注入module name
+		coreContext.Module = moduleName
+
 		// 注入是否已授权
 		coreContext.Authorized = authorized
 		if authorized {

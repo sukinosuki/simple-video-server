@@ -1,21 +1,26 @@
 package middleware
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"simple-video-server/models"
+	"simple-video-server/app_server/modules/auth"
 	"simple-video-server/pkg/app_ctx"
 	"simple-video-server/pkg/app_jwt"
-	"simple-video-server/pkg/global"
 	"simple-video-server/pkg/log"
 )
 
 var PreAuthorizeHandler = func(c *gin.Context) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			fmt.Println("pre authorize handler错误 ", err)
+		}
+	}()
 	token := app_ctx.GetHeaderAuthorize(c)
 	traceId, _ := app_ctx.GetTraceId(c)
+
+	userCache := auth.GetUserCache()
 
 	var fields []zap.Field
 
@@ -30,19 +35,15 @@ var PreAuthorizeHandler = func(c *gin.Context) {
 		if err != nil {
 			app_ctx.SetAuthorizeErr(c, err)
 		} else {
-			//TODO: 从缓存获取用户信息
+			// TODO: 从缓存获取用户信息
+			// TODO: redis使用泛型
+			// TODO: 从authCache获取
 			app_ctx.SetUid(c, claims.UID)
-			key := fmt.Sprintf("user:%d:info", claims.UID)
-			result, err := global.RDB.Get(context.Background(), key).Result()
 
-			if err == nil {
-				var user models.User
-				err := json.Unmarshal([]byte(result), &user)
-				if err == nil {
-					app_ctx.SetAuth(c, &user)
-				} else {
-					//	TODO:
-				}
+			user, err := userCache.GetUser(claims.UID)
+
+			if err == nil && user != nil {
+				app_ctx.SetAuth(c, user)
 			}
 
 			fields = append(fields, zap.Uint("uid", claims.UID))

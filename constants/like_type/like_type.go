@@ -1,7 +1,10 @@
 package like_type
 
 import (
+	"encoding/json"
+	"fmt"
 	"simple-video-server/common"
+	"simple-video-server/pkg/validation"
 )
 
 //const (
@@ -9,47 +12,67 @@ import (
 //	Dislike
 //)
 
-type LikeType struct {
-	common.CodeValue[int, string]
-}
+type LikeType common.CodeValue[int, string]
 
 var likeTypeMap = make(map[int]*LikeType)
 
 var Like = &LikeType{
-	common.CodeValue[int, string]{
-		Code:        1,
-		ValueString: "like",
-	},
+	Code:        1,
+	ValueString: "like",
 }
 
 var Dislike = &LikeType{
-	common.CodeValue[int, string]{
-		Code:        2,
-		ValueString: "dislike",
-	},
+	Code:        2,
+	ValueString: "dislike",
 }
 
 func init() {
 	likeTypeMap[Like.Code] = Like
 
 	likeTypeMap[Dislike.Code] = Dislike
-
-	//for k, v := range likeTypeMap {
-	//	fmt.Println("k ", k)
-	//	fmt.Println("v ", *v)
-	//	fmt.Println("value ", v.ValueString)
-	//}
 }
 
-func GetByCode(code int) (*LikeType, bool) {
-	for k, v := range likeTypeMap {
-		if code == k {
-			return v, true
-		}
+func (cv *LikeType) Is(code int) bool {
+
+	return cv.Code == code
+}
+
+func (cv *LikeType) MarshalJSON() ([]byte, error) {
+
+	bytes, err := json.Marshal(cv.Code)
+
+	return bytes, err
+}
+
+func (cv *LikeType) UnmarshalJSON(data []byte) error {
+
+	var k int
+	err := json.Unmarshal(data, &k)
+
+	if err != nil {
+		return err
+	}
+	value, ok := likeTypeMap[k]
+	// TODO: 提交参数、redis的json都会走自定义的UnmarshalJSON方法(如果redis里的值没有得到对应的数据, 也会走该错误
+	if !ok {
+		//return errors.New(fmt.Sprintf("不合适的gender value: %d", k))
+		return validation.NewValidateError(fmt.Sprintf("不合适的gender value: %d", k))
 	}
 
-	return nil, false
+	*cv = *value
+
+	return nil
 }
+
+//func GetByCode(code int) (*LikeType, bool) {
+//	for k, v := range likeTypeMap {
+//		if code == k {
+//			return v, true
+//		}
+//	}
+//
+//	return nil, false
+//}
 
 //var Like = common.CodeValue[string]{Code: 1, ValueString: "like"}
 //

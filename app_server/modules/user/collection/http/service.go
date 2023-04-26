@@ -6,6 +6,7 @@ import (
 	"simple-video-server/constants/video_status"
 	"simple-video-server/core"
 	"simple-video-server/models"
+	"simple-video-server/pkg/app_err"
 )
 
 type Service struct {
@@ -21,23 +22,15 @@ func GetService() *Service {
 	return _service
 }
 
-//func GetCollectionService() *Service {
-//	if _service != nil {
-//		return _service
-//	}
-//
-//	return &Service{
-//		//dao: GetCollectionDao(),
-//		dao: collection.GetDao(),
-//	}
-//}
-
 func (s *Service) Add(c *core.Context, vid uint) error {
+	handlerName := "Add"
+	businessErr := app_err.New(nil, handlerName, "")
+
 	uid := *c.AuthUID
 	// TODO: 视频是否存在
 	exists, video, err := s.dao.IsVideoExists(vid)
 	if err != nil {
-		return err
+		return businessErr.NewErr(err, "获取video是否存在失败")
 	}
 
 	if !exists {

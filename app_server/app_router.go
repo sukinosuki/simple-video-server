@@ -7,6 +7,8 @@ import (
 	commentHttp "simple-video-server/app_server/modules/comment/http"
 	emailHttp "simple-video-server/app_server/modules/email/http"
 	followHttp "simple-video-server/app_server/modules/follow/http"
+	operationLogHttp "simple-video-server/app_server/modules/log/operation_log/http"
+	requestLogHttp "simple-video-server/app_server/modules/log/request_log/http"
 	"simple-video-server/app_server/modules/test_limit"
 	uploadHttp "simple-video-server/app_server/modules/upload/http"
 	userCollection "simple-video-server/app_server/modules/user/collection/http"
@@ -22,8 +24,8 @@ func SetupRoutes(r *gin.RouterGroup) {
 	v1 := r.Group("/api/v1",
 		middleware.TraceHandler,
 		middleware.PreAuthorizeHandler,
-		middleware.ErrorHandler,
 		middleware.RequestLogHandler,
+		middleware.ErrorHandler,
 	)
 
 	videoHttp.SetupRoutes(v1)
@@ -47,4 +49,9 @@ func SetupRoutes(r *gin.RouterGroup) {
 	commentHttp.SetupRoutes(v1)
 
 	test_limit.SetupRoutes(v1)
+
+	requestLogHttp.SetupRoutes(v1)
+
+	operationLogHttp.SetupRoutes(v1)
+
 }

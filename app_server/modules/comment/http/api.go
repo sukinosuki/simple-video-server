@@ -19,50 +19,35 @@ func GetApi() *Api {
 
 func (api *Api) Add(c *core.Context) (*comment.CommentResSimple, error) {
 
-	var commentAdd comment.CommentAdd
-	err := c.ShouldBind(&commentAdd)
-	if err != nil {
-		panic(err)
-	}
+	form := core.MustBindForm[comment.CommentAdd](c)
 
-	commentSimple, err := api.service.Add(c, &commentAdd, commentAdd.MediaID, commentAdd.MediaType)
+	commentSimple := api.service.Add(c, form, form.MediaID, form.MediaType)
 
-	return commentSimple, err
+	return commentSimple, nil
 }
 
 func (api *Api) Delete(c *core.Context) (bool, error) {
-	var form comment.CommentDelete
-	err := c.ShouldBind(&form)
-	if err != nil {
-		panic(err)
-	}
+	form := core.MustBindForm[comment.CommentDelete](c)
 
-	err = api.service.Delete(c, form.MediaID, form.MediaType)
+	api.service.Delete(c, form.MediaID, form.MediaType)
 
-	return true, err
+	return true, nil
 }
 
 func (api *Api) GetAll(c *core.Context) ([]*comment.CommentResSimple, error) {
-	var query comment.CommentQuery
-	err := c.ShouldBind(&query)
-	if err != nil {
-		panic(err)
-	}
 
-	comments, err := api.service.GetAll(c, &query)
+	query := core.MustBindForm[comment.CommentQuery](c)
 
-	return comments, err
+	comments := api.service.GetAll(c, query)
+
+	return comments, nil
 }
 
 func (api *Api) Get(c *core.Context) ([]comment.CommentResSimple, error) {
 
-	var query comment.CommentQuery
-	err := c.ShouldBind(&query)
-	if err != nil {
-		panic(err)
-	}
+	query := core.MustBindForm[comment.CommentQuery](c)
 
-	comments, err := api.service.Get(c, &query)
+	comments := api.service.Get(c, query)
 
-	return comments, err
+	return comments, nil
 }

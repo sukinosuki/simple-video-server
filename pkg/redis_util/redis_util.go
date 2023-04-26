@@ -3,10 +3,18 @@ package redis_util
 import (
 	"context"
 	"encoding/json"
-	"simple-video-server/pkg/global"
+	"github.com/redis/go-redis/v9"
+	"simple-video-server/db"
+	"time"
 )
 
-func Set[T any](key string, v T) error {
+var client *redis.Client
+
+func init() {
+	client = db.GetRedisClient()
+}
+
+func Set[T any](key string, v T, expiration time.Duration) error {
 	var ctx = context.Background()
 
 	bytes, err := json.Marshal(v)
@@ -15,14 +23,14 @@ func Set[T any](key string, v T) error {
 		return err
 	}
 
-	err = global.RDB.Set(ctx, key, bytes, 0).Err()
+	err = client.Set(ctx, key, bytes, expiration).Err()
 
 	return err
 }
 
 func Get[T any](key string) (*T, error) {
 	var ctx = context.Background()
-	result, err := global.RDB.Get(ctx, key).Result()
+	result, err := client.Get(ctx, key).Result()
 
 	if err != nil {
 		return nil, err

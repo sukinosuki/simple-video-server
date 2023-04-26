@@ -13,7 +13,7 @@ func main() {
 	//global.MysqlDB = db.SetupMysql()
 	global.MysqlDB = db.GetOrmDB()
 
-	global.RDB = db.GetRedisDB()
+	global.RDB = db.GetRedisClient()
 
 	SetupRouter()
 }

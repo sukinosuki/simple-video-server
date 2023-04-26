@@ -62,7 +62,7 @@ func (cv *Gender) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// 写入 mysql 时调用
+// Value 写入 mysql 时调用
 func (cv *Gender) Value() (driver.Value, error) {
 	//// 0001-01-01 00:00:00 属于空值，遇到空值解析成 null 即可
 	//if t.String() == "0001-01-01 00:00:00" {

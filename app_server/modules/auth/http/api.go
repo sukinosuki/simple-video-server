@@ -17,16 +17,15 @@ var _api = &_Api{
 //	return _api
 //}
 
-// RegisterHandler
+// Register
 // @Tag.name 用户管理
 // @Summary 注册summary
 // @Description 注册description
 // @Param data body RegisterDTO true "登录参数"
 // @Router /_Api/v1/user/register [post]
 // @Success 200 {object} AuthLoginRes "成功响应"
-func (api *_Api) RegisterHandler(c *core.Context) (*auth.LoginRes, error) {
-	form := core.MustBindForm[auth.RegisterForm](c)
-
+func (api *_Api) Register(c *core.Context) (*auth.LoginRes, error) {
+	var form *auth.RegisterForm = core.MustBindForm[auth.RegisterForm](c)
 	loginRes := api.service.Register(c, form)
 
 	return loginRes, nil
@@ -39,7 +38,7 @@ func (api *_Api) RegisterHandler(c *core.Context) (*auth.LoginRes, error) {
 // @Router /_Api/v1/user/login [post]
 // @Success 200 {object} AuthLoginRes
 func (api *_Api) Login(c *core.Context) (*auth.LoginRes, error) {
-	form := core.MustBindForm[auth.LoginForm](c)
+	var form *auth.LoginForm = core.MustBindForm[auth.LoginForm](c)
 	loginRes := api.service.Login(c, form)
 
 	return loginRes, nil

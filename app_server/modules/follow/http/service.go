@@ -7,6 +7,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"simple-video-server/app_server/modules/follow"
+	"simple-video-server/app_server/modules/user/user"
+	"simple-video-server/common"
 	"simple-video-server/core"
 	"simple-video-server/db"
 	"simple-video-server/models"
@@ -16,24 +18,26 @@ import (
 )
 
 type _service struct {
-	cache *redis.Client
-	db    *gorm.DB
+	redisClient *redis.Client
+	db          *gorm.DB
+	followCache *follow.Cache
+	userDao     *user.Dao
 }
 
 var Service = &_service{
-	cache: db.GetRedisDB(),
-	db:    db.GetOrmDB(),
+	redisClient: db.GetRedisClient(),
+	db:          db.GetOrmDB(),
+	followCache: follow.GetCache(),
+	userDao:     user.GetDao(),
 }
 
-const scoreKey = "fans_count_statistic"
-
-func getFollowingKey(uid uint) string {
+func _generateFollowingKeyByUID(uid uint) string {
 	key := fmt.Sprintf("user:%d:following", uid)
 
 	return key
 }
 
-func getFollowerKey(uid uint) string {
+func _generateFollowerKeyByUID(uid uint) string {
 	key := fmt.Sprintf("user:%d:follower", uid)
 
 	return key
@@ -43,52 +47,74 @@ func getFollowerKey(uid uint) string {
 
 // Follow 添加一个关注
 func (s *_service) Follow(c *core.Context, targetUid uint) error {
+	handlerName := "Follow"
+
+	redisTx := s.redisClient.TxPipeline()
+	defer func() {
+		err := recover()
+
+		if err == nil {
+			_, _err := redisTx.Exec(context.Background())
+
+			if _err != nil {
+				panic(_err)
+			}
+		} else {
+			panic(err)
+		}
+	}()
 
 	// TODO: 是否已关注
-	followingKey := getFollowingKey(*c.AuthUID)
-	followerKey := getFollowerKey(targetUid)
+	//followingKey := _generateFollowingKeyByUID(*c.AuthUID)
+	//followerKey := _generateFollowerKeyByUID(targetUid)
+	//
+	//exists, err := s.redisClient.SIsMember(context.Background(), followingKey, targetUid).Result()
+	//c.PanicIfErr(err, handlerName, "判断是否是成员失败")
+	isFollowingTargetUser, err := s.followCache.IsUserFollowingAnotherUser(*c.AuthUID, targetUid)
+	c.PanicIfErr(err, handlerName, "判断是否是成员失败")
 
-	exists, err := s.cache.SIsMember(context.Background(), followingKey, targetUid).Result()
-
-	if err != nil {
-		panic(err)
+	if isFollowingTargetUser {
+		c.Panic(errors.New("操作不允许, 已关注过该用户"), handlerName, "重复的关注操作")
 	}
 
-	if exists {
-		//TODO
-		panic(errors.New("操作不允许, 已关注过该用户"))
-	}
-
-	// uid的关注set加上targetUid
-	_, err = s.cache.SAdd(context.Background(), followingKey, targetUid).Result()
-	// TODO: 事务
-	if err != nil {
-		return err
-	}
+	_, err = s.followCache.AddFollowing(redisTx, *c.AuthUID, targetUid)
+	c.PanicIfErr(err, handlerName, "缓存添加关注失败")
 
 	// targetUid的粉丝set加上uid
-	_, err = s.cache.SAdd(context.Background(), followerKey, *c.AuthUID).Result()
-	if err != nil {
-		return err
-	}
+	_, err = s.followCache.AddFollower(redisTx, *c.AuthUID, targetUid)
+	c.PanicIfErr(err, handlerName, "目录用户粉丝set添加粉丝uid失败")
 
 	// targetUid 用户的粉丝数自增1
-	result2, err := s.cache.ZIncrBy(context.Background(), scoreKey, 1, strconv.Itoa(int(targetUid))).Result()
-	if err != nil {
-		return err
-	}
+	_, err = s.followCache.IncreaseFollowerCount(redisTx, targetUid)
+	c.PanicIfErr(err, handlerName, "用户的粉丝数自增1失败")
 
-	fmt.Println("result2 ", result2)
+	c.Info("关注用户", handlerName)
+
 	return nil
 }
 
 // Unfollow 取消一个关注
 func (s *_service) Unfollow(c *core.Context, targetUid uint) error {
-	followingKey := getFollowingKey(*c.AuthUID)
-	followerKey := getFollowerKey(targetUid)
+	handlerName := "Unfollow"
+	redisTx := s.redisClient.TxPipeline()
+
+	defer func() {
+		err := recover()
+		if err == nil {
+			_, _err := redisTx.Exec(context.Background())
+			if _err != nil {
+				c.Panic(_err, handlerName, "redis提交事务失败")
+			}
+		} else {
+			panic(err)
+		}
+	}()
+
+	followingKey := _generateFollowingKeyByUID(*c.AuthUID)
+	followerKey := _generateFollowerKeyByUID(targetUid)
 
 	// 用户是否已经关注目标用户
-	exists, err := s.cache.SIsMember(context.Background(), followerKey, *c.AuthUID).Result()
+	exists, err := s.redisClient.SIsMember(context.Background(), followerKey, *c.AuthUID).Result()
 
 	if err != nil {
 		return err
@@ -100,33 +126,25 @@ func (s *_service) Unfollow(c *core.Context, targetUid uint) error {
 	}
 
 	//用户的关注列表删除目标用户
-	result, err := s.cache.SRem(context.Background(), followingKey, targetUid).Result()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("result ", result)
+	_, err = redisTx.SRem(context.Background(), followingKey, targetUid).Result()
+	c.PanicIfErr(err, handlerName, "用户的关注列表删除目标用户失败")
 
 	//目标用户的关注列表删除用户
-	result, err = s.cache.SRem(context.Background(), followerKey, *c.AuthUID).Result()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("result ", result)
+	_, err = redisTx.SRem(context.Background(), followerKey, *c.AuthUID).Result()
+	c.PanicIfErr(err, handlerName, "目标用户的关注列表删除用户失败")
 
 	//score的目标用户粉丝数-1
-	result2, err := s.cache.ZIncrBy(context.Background(), scoreKey, -1, strconv.Itoa(int(targetUid))).Result()
-	if err != nil {
-		return err
-	}
+	_, err = s.followCache.DecreaseFollowerCount(redisTx, targetUid)
+	c.PanicIfErr(err, handlerName, "score的目标用户粉丝数-1")
 
-	fmt.Println("result2 ", result2)
+	c.Info("用户取消关注", handlerName)
+
 	return nil
 }
 
 // FollowScores 获取 follow 排名
-func (s *_service) FollowScores(c *core.Context, query *follow.UserFollowRankQuery) (users []*follow.UserFollowerRankResSimple, err error) {
+func (s *_service) FollowScores(c *core.Context, query *follow.UserFollowRankQuery) ([]*follow.UserFollowerRankResSimple, error) {
+	handlerName := "FollowScores"
 
 	var start int64 = 0
 	var end int64 = 10
@@ -150,7 +168,8 @@ func (s *_service) FollowScores(c *core.Context, query *follow.UserFollowRankQue
 	}
 
 	// redis 从高到低获取排名
-	result, err := s.cache.ZRevRangeWithScores(context.Background(), scoreKey, start, end).Result()
+	//result, err := s.redisClient.ZRevRangeWithScores(context.Background(), scoreKey, start, end).Result()
+	result, err := s.followCache.GetFollowerCountRank(start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -180,8 +199,20 @@ func (s *_service) FollowScores(c *core.Context, query *follow.UserFollowRankQue
 	}
 
 	//按score排名前n条得到的user id查询user
-	//var users []*UserFollowerRankResSimple
-	err = s.db.Model(&models.User{}).Where("id in ?", ids).Find(&users).Error
+	//err = s.db.Model(&models.User{}).Where("id in ?", ids).Find(&users).Error
+	_users, err := s.userDao.GetByIdIn(ids, &common.Pager{Page: 1, Size: len(ids)})
+	c.PanicIfErr(err, handlerName, "获取用户失败")
+
+	users := arr.Map(_users, func(item models.User, index int) *follow.UserFollowerRankResSimple {
+
+		return &follow.UserFollowerRankResSimple{
+			ID:       item.ID,
+			Avatar:   item.Avatar,
+			Nickname: item.Nickname,
+		}
+	})
+
+	c.PanicIfErr(err, handlerName, "获取用户列表失败")
 
 	//每个user赋值对应的score
 	arr.ForEach(users, func(item *follow.UserFollowerRankResSimple, index int) {
@@ -199,16 +230,16 @@ func (s *_service) FollowScores(c *core.Context, query *follow.UserFollowRankQue
 // GetUserFollower 获取某个用户的粉丝列表
 func (s *_service) GetUserFollower(c *core.Context, userId uint, query *follow.UserFollowerQuery) ([]*follow.UserFollowerResSimple, error) {
 
-	targetUserFollowerKey := getFollowerKey(userId)
-	selfFollowerKey := getFollowerKey(*c.AuthUID)
+	targetUserFollowerKey := _generateFollowerKeyByUID(userId)
+	selfFollowerKey := _generateFollowerKeyByUID(*c.AuthUID)
 
 	var ids []string
 	var err error
 	if query.IsInter {
-		ids, err = s.cache.SInter(context.Background(), targetUserFollowerKey, selfFollowerKey).Result()
+		ids, err = s.redisClient.SInter(context.Background(), targetUserFollowerKey, selfFollowerKey).Result()
 	} else {
 
-		ids, err = s.cache.SMembers(context.Background(), targetUserFollowerKey).Result()
+		ids, err = s.redisClient.SMembers(context.Background(), targetUserFollowerKey).Result()
 	}
 
 	if err != nil {
@@ -223,16 +254,16 @@ func (s *_service) GetUserFollower(c *core.Context, userId uint, query *follow.U
 
 // GetUserFollowing 获取某个用户的关注列表
 func (s *_service) GetUserFollowing(c *core.Context, userId uint, query *follow.UserFollowerQuery) ([]*follow.UserFollowerResSimple, error) {
-	targetUserFollowingKey := getFollowingKey(userId)
-	selfFollowingKey := getFollowingKey(*c.AuthUID)
+	targetUserFollowingKey := _generateFollowingKeyByUID(userId)
+	selfFollowingKey := _generateFollowingKeyByUID(*c.AuthUID)
 
 	var ids []string
 	var err error
 	if query.IsInter {
-		ids, err = s.cache.SInter(context.Background(), targetUserFollowingKey, selfFollowingKey).Result()
+		ids, err = s.redisClient.SInter(context.Background(), targetUserFollowingKey, selfFollowingKey).Result()
 	} else {
 
-		ids, err = s.cache.SMembers(context.Background(), targetUserFollowingKey).Result()
+		ids, err = s.redisClient.SMembers(context.Background(), targetUserFollowingKey).Result()
 	}
 
 	if err != nil {
@@ -244,9 +275,3 @@ func (s *_service) GetUserFollowing(c *core.Context, userId uint, query *follow.
 
 	return users, err
 }
-
-// IsFollower 自己是否是关注了某个用户
-//func (s *_service) IsFollowingOneUser(c *core.Context, targetUID uint) {
-//	//exists, err := s.cache.SIsMember(context.Background(), followingKey, targetUid).Result()
-//
-//}

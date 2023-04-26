@@ -3,27 +3,31 @@ package like
 import (
 	"context"
 	"fmt"
-	"simple-video-server/pkg/global"
+	"github.com/redis/go-redis/v9"
+	"simple-video-server/db"
 	"strconv"
 )
 
 type Cache struct {
+	client *redis.Client
 }
 
-var _likeCache = &Cache{}
+var _likeCache = &Cache{
+	client: db.GetRedisClient(),
+}
 
 func GetCache() *Cache {
 	return _likeCache
 }
 
-// uid获取key: user:1:like_video
-func (ca *Cache) getUserLikeVideoKey(uid uint) string {
-	likeKey := fmt.Sprintf("user:%d:like_video", uid)
+//// uid获取key: user:1:like_video
+//func (ca *Cache) getUserLikeVideoKey(uid uint) string {
+//	likeKey := fmt.Sprintf("user:%d:like_video", uid)
+//
+//	return likeKey
+//}
 
-	return likeKey
-}
-
-// uid获取key: user:1:like_video
+// uid获取key, 格式: user:[:id]:like_video
 func getUserLikeVideoKey(uid uint) string {
 	likeKey := fmt.Sprintf("user:%d:like_video", uid)
 
@@ -31,15 +35,16 @@ func getUserLikeVideoKey(uid uint) string {
 }
 
 // AddUserLike 增加用户点赞(点踩)
-func (ca *Cache) AddUserLike(uid, vid uint, likeType int) error {
+func (ca *Cache) AddUserLike(tx redis.Pipeliner, uid, vid uint, likeType int) error {
 	var ctx = context.Background()
 
 	// field为video id
-	field := strconv.Itoa(int(vid))
+	//field := strconv.Itoa(int(vid))
 
-	likeKey := getUserLikeVideoKey(uid)
+	key := getUserLikeVideoKey(uid)
 
-	err := global.RDB.HSet(ctx, likeKey, field, likeType).Err()
+	// hash: 根据key和field字段设置，field字段的值
+	err := tx.HSet(ctx, key, vid, likeType).Err()
 
 	return err
 }
@@ -52,12 +57,13 @@ func (ca *Cache) AddUserLike(uid, vid uint, likeType int) error {
 func (ca *Cache) GetLikeTypeByUserAndVideo(uid, vid uint) (int, error) {
 	var ctx = context.Background()
 
-	likeKey := getUserLikeVideoKey(uid)
+	key := getUserLikeVideoKey(uid)
 
 	field := strconv.Itoa(int(vid))
 
-	// result是字符串
-	result, err := global.RDB.HGet(ctx, likeKey, field).Result()
+	// 根据key和field字段，查询field字段的值
+	// field没获取到值时, result是"", err为 error类型的字符串"redis: nil"
+	result, err := ca.client.HGet(ctx, key, field).Result()
 
 	if err == nil {
 		likeType, err2 := strconv.Atoi(result)
@@ -69,12 +75,12 @@ func (ca *Cache) GetLikeTypeByUserAndVideo(uid, vid uint) (int, error) {
 }
 
 // DeleteUserLike 删除用户点赞
-func (ca *Cache) DeleteUserLike(uid, vid uint) error {
+func (ca *Cache) DeleteUserLike(tx redis.Pipeliner, uid, vid uint) error {
 	var ctx = context.Background()
 	likeKey := getUserLikeVideoKey(uid)
 	field := strconv.Itoa(int(vid))
 
-	err := global.RDB.HDel(ctx, likeKey, field).Err()
+	err := tx.HDel(ctx, likeKey, field).Err()
 
 	return err
 }

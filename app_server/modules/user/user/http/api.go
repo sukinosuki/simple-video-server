@@ -17,7 +17,7 @@ func GetApi() *Api {
 	return _api
 }
 
-func (api *Api) GetAll(c *core.Context) ([]*user.UserSimple, error) {
+func (api *Api) GetAll(c *core.Context) ([]*user.RankUsers, error) {
 
 	var query user.UserQuery
 	err := c.ShouldBind(&query)
@@ -25,7 +25,7 @@ func (api *Api) GetAll(c *core.Context) ([]*user.UserSimple, error) {
 		panic(err)
 	}
 
-	users, err := api.service.GetAll(c, &query)
+	users, err := api.service.GetRanks(c, &query)
 
 	return users, err
 }

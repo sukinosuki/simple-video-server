@@ -13,6 +13,8 @@ import (
 var AuthorizeHandler = func(c *gin.Context) {
 	_, exists := app_ctx.GetUid(c)
 
+	// TODO: 有uid但是没有userCache
+
 	if !exists {
 		//authErr, exists := c.Get(AuthErrKey)
 		authErr, exists := app_ctx.GetAuthorizeErr(c)

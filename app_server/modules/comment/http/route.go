@@ -22,9 +22,7 @@ func SetupRoutes(v1 *gin.RouterGroup) {
 		// 新增评论
 		auth.POST("/comment", core.ToHandler(_api.Add, "comment"))
 
-		//auth.GET("/comment/:id")
-		//
-		//auth.PUT("/comment/:id")
+		// TODO: 修改评论
 
 		auth.DELETE("/comment/:id", core.ToHandler(_api.Delete, "comment"))
 	}

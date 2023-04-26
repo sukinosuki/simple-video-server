@@ -51,11 +51,10 @@ type LoginResProfileUser struct {
 
 // UpdateForm AuthUpdateDTO 更新
 type UpdateForm struct {
-	Nickname string     `json:"nickname" form:"nickname" binding:"required"`
-	Birthday *time.Time `json:"birthday" form:"birthday"`
-	//Gender   *gender.Gender `json:"gender" form:"gender" binding:"required"`
-	Gender *gender.Gender `json:"gender" form:"gender" binding:"required"`
-	Avatar string         `json:"avatar" form:"avatar" binding:"required"`
+	Nickname string         `json:"nickname" form:"nickname" binding:"required"`
+	Birthday *time.Time     `json:"birthday" form:"birthday"`
+	Gender   *gender.Gender `json:"gender" form:"gender" binding:"required"`
+	Avatar   string         `json:"avatar" form:"avatar" binding:"required"`
 }
 
 // ResetPasswordForm AuthResetPasswordForm 重置密码

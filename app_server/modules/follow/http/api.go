@@ -18,16 +18,6 @@ func GetApi() *Api {
 }
 
 func (api *Api) Follow(c *core.Context) (bool, error) {
-	//var followAdd *FollowAdd
-	//err := c.ShouldBind(&followAdd)
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	//targetUID, err := strconv.Atoi(c.Param("target_uid"))
-	//if err != nil {
-	//	panic(err)
-	//}
 
 	err := api.service.Follow(c, c.GetParamId())
 	if err != nil {

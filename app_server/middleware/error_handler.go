@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-sql-driver/mysql"
@@ -90,7 +91,7 @@ var ErrorHandler = func(c *gin.Context) {
 
 			// 自定义business错误
 			if e, ok := err.(business_code.BusinessCode); ok {
-				log.Warn("业务错误", zap.String("msg", e.Message()), zap.Int("code", e.Code()), handlerField)
+				log.Warn(fmt.Sprintf("%s:%d", e.Message(), e.Code()), handlerField)
 
 				// TODO:
 				c.AbortWithStatusJSON(http.StatusOK, common.AppResponse[any]{
@@ -103,11 +104,13 @@ var ErrorHandler = func(c *gin.Context) {
 			}
 
 			// err为string的情况
-			if _, ok := err.(string); ok {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"code": 500,
-					"msg":  err,
-				})
+			if errString, ok := err.(string); ok {
+				res := common.AppResponse[any]{
+					Code:   500,
+					Msg:    "服务器错误",
+					ErrMsg: errString,
+				}
+				c.AbortWithStatusJSON(http.StatusInternalServerError, res)
 				return
 			}
 
@@ -115,10 +118,12 @@ var ErrorHandler = func(c *gin.Context) {
 
 			log.Warn("未知错误 ", zap.String("err msg", e.Error()), handlerField)
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code": 500,
-				"msg":  e.Error(),
-			})
+			res := &common.AppResponse[any]{
+				Code:   500,
+				Msg:    "服务器错误",
+				ErrMsg: e.Error(),
+			}
+			c.AbortWithStatusJSON(http.StatusInternalServerError, res)
 
 			return
 		}

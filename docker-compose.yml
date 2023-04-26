@@ -1,0 +1,115 @@
+version: "3.5"
+
+services:
+
+  clickhouse:
+    image: yandex/clickhouse-server:21.9.4.35
+    container_name: clickhouse
+    restart: always
+    expose:
+      - 9000
+      - 8123
+      - 9009
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+      - "9009:9009"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 262144
+        hard: 262144
+    environment:
+      - TZ=Asia/Shanghai
+      # - CLICKHOUSE_USER=root
+      # - CLICKHOUSE_PASSWORD=xmnzdwH5
+    volumes:
+#      - ./data:/var/lib/clickhouse
+      - /home/docker/clickhouse2/data:/var/lib/clickhouse
+      # 按需使用
+      # - ./config.xml:/etc/clickhouse-server/config.xml
+      # - ./users.xml:/etc/clickhouse-server/users.xml
+
+  zookeeper:
+    container_name: zookeeper
+    image: wurstmeister/zookeeper
+    restart: always
+    volumes:
+      - /home/docker/zookeeper/data:/data
+    ports:
+      - 2181:2181
+  
+  kafka:
+    container_name: kafka
+    image: wurstmeister/kafka
+    restart: always
+    ports:
+      - 9092:9092
+#      - 8123:8123
+    environment:
+      KAFKA_BROKER_ID: 0
+      #kafka会在zookeeper中使用这个参数进行注册，如果不设置，zk就无法向外提供broker的信息,这里填写kafka的ip地址
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.10.182:9092
+      # KAFKA_ADVERTISED_HOST_NAME: 182.92.234.23 # 注册到zk里的kafka HOST_NAME dkafka 0.9.x以后弃用
+      KAFKA_CREATE_TOPICS: "test:2:0"   #kafka启动后初始化一个有2个partition(分区)0个副本名叫test的topic 
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # kafka的tcp侦听ip地址 例如“127.0.0.1”，那么只有与该ip正确连接的客户端能成功连接到kafka；
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_HEAP_OPTS: "-Xmx256M -Xms128M"
+    volumes:
+      - /home/docker/kafka/kafka-logs:/kafka
+    depends_on:
+      - zookeeper
+
+#  permissions:
+#    build: .
+#    command:
+#      - sudo chown -R 1000:1000 /usr/share/elasticsearch/data
+      
+  elasticsearch:
+    image: elasticsearch:7.17.3
+    restart: always
+    container_name: elasticsearch
+    environment:
+#        - discovery.type=single-node
+#      - ES_JAVA_OPTS=-Xms1g -Xmx1g # es占内存, 这里设置它的占用内存大小?
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m # es占内存, 这里设置它的占用内存大小?
+#        - xpack.security.enabled=false
+      - discovery.type=single-node
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+    volumes:
+        - /home/docker/elasticsearch/data:/usr/share/elasticsearch/data
+        - /home/docker/elasticsearch/config:/usr/share/elasticsearch/config
+        - /home/docker/elasticsearch/plugins:/usr/share/elasticsearch/plugins
+    ports:
+#      - target: 9200
+#        published: 9200
+      - 9200:9200
+      - 9300:9300
+    networks:
+        - elastic
+
+  kibana:
+    image: kibana:7.17.3
+    container_name: kibana
+    restart: always
+    ports:
+      - 5601:5601
+    depends_on:
+        - elasticsearch
+    networks:
+        - elastic
+    volumes:
+      - /home/docker/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+
+#volumes:
+#  data:
+#  config:
+#  plugin:
+    
+networks:
+  elastic: # 声明使用网络
+    driver: bridge
+
+# 因为kibana和elasticsearch使用了同一个networks “elastic”, 所以在kibana.yml配置文件里可以

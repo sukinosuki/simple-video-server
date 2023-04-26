@@ -21,19 +21,18 @@ func GetDao() *Dao {
 	return _dao
 }
 
-func (d *Dao) Create(comment *models.Comment) error {
+func (d *Dao) Create(tx *gorm.DB, comment *models.Comment) error {
 
-	tx := d.db.Model(d.model)
+	//tx := d.db.Model(d.model)
 
-	err := tx.Create(comment).Error
+	err := tx.Model(d.model).Create(comment).Error
 
 	return err
 }
 
-func (d *Dao) Delete(uid uint, mediaType int, mediaId uint, id uint) error {
-	tx := d.db.Model(d.model)
-	err := tx.
-		Where("id = ? AND media_id = ? AND media_type = ? AND uid = ?", id, mediaId, mediaType, uid).
+func (d *Dao) DeleteByIdAndUidAndIdAndType(tx *gorm.DB, uid uint, mediaType int, mediaId uint, id uint) error {
+	err := tx.Model(d.model).
+		Where("id = ? AND media_id = ? AND uid = ? AND media_type = ?", id, mediaId, uid, mediaType).
 		Delete(&models.Comment{}).Error
 
 	return err

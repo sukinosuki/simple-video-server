@@ -3,46 +3,63 @@ package video
 import (
 	"context"
 	"fmt"
-	"simple-video-server/pkg/global"
+	"github.com/redis/go-redis/v9"
+	"simple-video-server/db"
+	"simple-video-server/pkg/util"
 	"strconv"
 )
 
 type Cache struct {
+	client *redis.Client
 }
 
-var _video = &Cache{}
+var _video = &Cache{
+	client: db.GetRedisClient(),
+}
 
 func GetCache() *Cache {
 	return _video
 }
 
-// get like count key
-func (vc *Cache) getVideoLikeCountKey(vid uint) string {
+// vid生成视频点赞key
+func _generateVideoLikeCountKeyByVid(vid uint) string {
 	videoLikeCountKey := fmt.Sprintf("video:%d:like_count", vid)
+
 	return videoLikeCountKey
 }
 
-// get dislike count key
-func (vc *Cache) getVideoDislikeCountKey(vid uint) string {
-
+// vid生成视频点踩key
+func _generateVideoDislikeCountKeyByVid(vid uint) string {
 	videoDislikeCountKey := fmt.Sprintf("video:%d:dislike_count", vid)
 
 	return videoDislikeCountKey
 }
 
+//func parseJson[T any](data string) (*T, error) {
+//
+//
+//}
+
 // GetVideoLikeCount video id获取视频点赞数
 func (vc *Cache) GetVideoLikeCount(vid uint) (int, error) {
-
 	ctx := context.Background()
-	likeCountKey := vc.getVideoLikeCountKey(vid)
+	key := _generateVideoLikeCountKeyByVid(vid)
 
-	result, err := global.RDB.Get(ctx, likeCountKey).Result()
+	result, err := vc.client.Get(ctx, key).Result()
 
 	if err != nil {
 		return 0, err
 	}
 
+	// TODO: 使用泛型获取对应格式
 	count, err := strconv.Atoi(result)
+
+	count2, err := util.ParseJson[int](result)
+	if err != nil {
+		return 0, err
+	}
+
+	fmt.Println("count2 ", count2)
 
 	return count, err
 }
@@ -50,8 +67,9 @@ func (vc *Cache) GetVideoLikeCount(vid uint) (int, error) {
 // GetVideoDislikeCount video id获取视频点踩数
 func (vc *Cache) GetVideoDislikeCount(vid uint) (int, error) {
 	ctx := context.Background()
-	key := vc.getVideoDislikeCountKey(vid)
-	result, err := global.RDB.Get(ctx, key).Result()
+	key := _generateVideoDislikeCountKeyByVid(vid)
+
+	result, err := vc.client.Get(ctx, key).Result()
 
 	if err != nil {
 		return 0, err
@@ -60,44 +78,44 @@ func (vc *Cache) GetVideoDislikeCount(vid uint) (int, error) {
 	return strconv.Atoi(result)
 }
 
-// IncreaseLikeCount 加1视频点赞数
-func (vc *Cache) IncreaseLikeCount(uid, vid uint, likeType int) error {
+// IncreaseVideoLikeCount 加1视频点赞数
+func (vc *Cache) IncreaseVideoLikeCount(tx redis.Pipeliner, vid uint) error {
 	var ctx = context.Background()
 
-	key := vc.getVideoLikeCountKey(vid)
+	key := _generateVideoLikeCountKeyByVid(vid)
 
-	err := global.RDB.Incr(ctx, key).Err()
+	err := tx.Incr(ctx, key).Err()
 
 	return err
 }
 
-// DecreaseLikeCount 减1视频点赞数
-func (vc *Cache) DecreaseLikeCount(uid, vid uint) error {
+// DecreaseVideoLikeCount 减1视频点赞数
+func (vc *Cache) DecreaseVideoLikeCount(tx redis.Pipeliner, vid uint) error {
 	var ctx = context.Background()
-	key := vc.getVideoLikeCountKey(vid)
+	key := _generateVideoLikeCountKeyByVid(vid)
 
-	err := global.RDB.Decr(ctx, key).Err()
+	err := tx.Decr(ctx, key).Err()
 
 	return err
 }
 
 // IncreaseDislikeCount 加1视频点踩数
-func (vc *Cache) IncreaseDislikeCount(uid, vid uint, likeType int) error {
+func (vc *Cache) IncreaseDislikeCount(tx redis.Pipeliner, uid, vid uint) error {
 	var ctx = context.Background()
 
-	key := vc.getVideoDislikeCountKey(vid)
+	key := _generateVideoDislikeCountKeyByVid(vid)
 
-	err := global.RDB.Incr(ctx, key).Err()
+	err := tx.Incr(ctx, key).Err()
 
 	return err
 }
 
 // DecreaseDislikeCount 减1视频点踩数
-func (vc *Cache) DecreaseDislikeCount(uid, vid uint) error {
+func (vc *Cache) DecreaseDislikeCount(tx redis.Pipeliner, uid, vid uint) error {
 	var ctx = context.Background()
-	key := vc.getVideoDislikeCountKey(vid)
+	key := _generateVideoDislikeCountKeyByVid(vid)
 
-	err := global.RDB.Decr(ctx, key).Err()
+	err := tx.Decr(ctx, key).Err()
 
 	return err
 }

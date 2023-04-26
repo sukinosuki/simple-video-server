@@ -20,6 +20,13 @@ type mysqlConfig struct {
 	Database string
 }
 
+type clickHouseConfig struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+}
+
 type redisConfig struct {
 	Host     string
 	Port     int
@@ -39,6 +46,11 @@ type logConfig struct {
 	MaxBackups int
 }
 
+type elasticsearchConfig struct {
+	Host string
+	Port int
+}
+
 type ossConfig struct {
 	Protocol        string
 	Endpoint        string
@@ -53,23 +65,27 @@ type emailConfig struct {
 }
 
 type appConfig struct {
-	Env   envConfig
-	Mysql mysqlConfig
-	Jwt   jwtConfig
-	Redis redisConfig
-	Oss   ossConfig
-	Log   logConfig
-	Email emailConfig
+	Env           envConfig
+	Mysql         mysqlConfig
+	Jwt           jwtConfig
+	Redis         redisConfig
+	Oss           ossConfig
+	Log           logConfig
+	Email         emailConfig
+	Clickhouse    clickHouseConfig
+	Elasticsearch elasticsearchConfig
 }
 
 var (
-	Env   envConfig
-	Mysql mysqlConfig
-	Jwt   jwtConfig
-	Redis redisConfig
-	Oss   ossConfig
-	Log   logConfig
-	Email emailConfig
+	Env           envConfig
+	Mysql         mysqlConfig
+	Jwt           jwtConfig
+	Redis         redisConfig
+	Oss           ossConfig
+	Log           logConfig
+	Email         emailConfig
+	Clickhouse    clickHouseConfig
+	Elasticsearch elasticsearchConfig
 )
 
 func init() {
@@ -110,4 +126,7 @@ func init() {
 
 	Email = _appConfig.Email
 
+	Clickhouse = _appConfig.Clickhouse
+
+	Elasticsearch = _appConfig.Elasticsearch
 }

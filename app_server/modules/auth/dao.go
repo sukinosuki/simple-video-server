@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"simple-video-server/db"
 	"simple-video-server/models"
@@ -13,20 +12,20 @@ type Dao struct {
 	model *models.User
 }
 
-var _authDao = &Dao{
+var _dao = &Dao{
 	db:    db.GetOrmDB(),
 	model: &models.User{},
 }
 
 func GetAuthDao() *Dao {
-	return _authDao
+	return _dao
 }
 
 // IsExistsByEmail 邮箱是否已存在
 func (dao *Dao) IsExistsByEmail(email string) (bool, *models.User, error) {
-	tx := dao.db.Model(dao.model)
-
 	var user models.User
+
+	tx := dao.db.Model(dao.model)
 
 	err := tx.Where("email = ?", email).First(&user).Error
 
@@ -34,6 +33,7 @@ func (dao *Dao) IsExistsByEmail(email string) (bool, *models.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil, nil
 		}
+
 		return false, nil, err
 	}
 
@@ -53,8 +53,10 @@ func (dao *Dao) GetOneUserAllVideoCount(uid uint) (int64, error) {
 
 // GetUserAllCollectionCount 获取用户视频收藏数
 func (dao *Dao) GetUserAllCollectionCount(uid uint) (int64, error) {
-	tx := dao.db.Model(&models.UserVideoCollection{})
 	var count int64
+
+	tx := dao.db.Model(&models.UserVideoCollection{})
+
 	err := tx.Where("uid = ?", uid).Count(&count).Error
 
 	return count, err
@@ -62,9 +64,10 @@ func (dao *Dao) GetUserAllCollectionCount(uid uint) (int64, error) {
 
 // GetOneByEmail get by email
 func (dao *Dao) GetOneByEmail(email string) (*models.User, error) {
+	var user models.User
+
 	tx := dao.db.Model(dao.model)
 
-	var user models.User
 	err := tx.Where("email = ?", email).First(user).Error
 
 	return &user, err
@@ -72,10 +75,9 @@ func (dao *Dao) GetOneByEmail(email string) (*models.User, error) {
 
 // GetOneByID get by id
 func (dao *Dao) GetOneByID(id uint) (*models.User, error) {
+	var user models.User
 
 	tx := dao.db.Model(dao.model)
-
-	var user models.User
 
 	err := tx.First(&user, id).Error
 
@@ -85,7 +87,9 @@ func (dao *Dao) GetOneByID(id uint) (*models.User, error) {
 // GetOneByEmailAndPassword find by email and password
 func (dao *Dao) GetOneByEmailAndPassword(email string, password string) (*models.User, error) {
 	var user models.User
+
 	tx := dao.db.Model(dao.model)
+
 	err := tx.Where("email = ? and password = ?", email, password).
 		First(&user).
 		Error
@@ -102,10 +106,6 @@ func (dao *Dao) Add(tx *gorm.DB, user *models.User) (id uint, err error) {
 
 // UpdateProfile Update 更新user
 func (dao *Dao) UpdateProfile(tx *gorm.DB, user *models.User) error {
-
-	fmt.Println("user ")
-	fmt.Println("user2 ", user)
-
 	// 更新指定字段
 	result := tx.
 		//Where("id = ?", user.ID).
@@ -116,16 +116,19 @@ func (dao *Dao) UpdateProfile(tx *gorm.DB, user *models.User) error {
 }
 
 // Updates 更新user非0值字段
-func (dao *Dao) Updates(user *models.User) error {
-	err := dao.db.Model(dao.model).Where("id = ?", user.ID).Updates(user).Error
+func (dao *Dao) Updates(tx *gorm.DB, user *models.User) error {
+
+	err := tx.Model(dao.model).Where("id = ?", user.ID).Updates(user).Error
 
 	return err
 }
 
 // DeleteById 删除用户
-func (dao *Dao) DeleteById(uid uint) error {
-
-	err := dao.db.Model(dao.model).Where("id = ?", uid).Limit(1).Delete(&models.User{}).Error
+func (dao *Dao) DeleteById(tx *gorm.DB, uid uint) error {
+	err := tx.Model(dao.model).
+		Where("id = ?", uid).
+		Limit(1).
+		Delete(&models.User{}).Error
 
 	return err
 }
